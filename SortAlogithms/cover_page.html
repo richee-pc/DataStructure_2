@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자료구조 & 알고리즘 교육</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* 밝은 배경색 */
+            color: #2d3748; /* 기본 텍스트 색상 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .cover-container {
+            background-color: #ffffff;
+            padding: 3rem 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 6px 15px -3px rgba(0, 0, 0, 0.05);
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .welcome-text {
+            font-size: 2.5rem; /* text-4xl */
+            font-weight: 800; /* font-extrabold */
+            color: #2b6cb0; /* blue-700 */
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        .subtitle-text {
+            font-size: 1.25rem; /* text-xl */
+            color: #4a5568; /* gray-700 */
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+        }
+        .cta-button {
+            background-color: #4299e1; /* blue-500 */
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 0.75rem; /* rounded-lg */
+            font-weight: 700; /* font-bold */
+            font-size: 1.125rem; /* text-lg */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .cta-button:hover {
+            background-color: #3182ce; /* blue-600 */
+            transform: translateY(-2px);
+        }
+        .footer-text {
+            margin-top: 2rem;
+            font-size: 0.875rem; /* text-sm */
+            color: #718096; /* gray-500 */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .welcome-text {
+                font-size: 2rem; /* Smaller on mobile */
+            }
+            .subtitle-text {
+                font-size: 1rem;
+            }
+            .cover-container {
+                padding: 2rem 1rem;
+            }
+            .cta-button {
+                padding: 0.8rem 2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cover-container">
+        <h1 class="welcome-text">
+            자료구조와 알고리즘의 핵심 원리,<br>
+            시뮬레이션으로 경험하세요!
+        </h1>
+        <p class="subtitle-text">
+            이 교육용 웹 페이지는 정렬 알고리즘과 탐색 알고리즘의 동작 방식을<br>
+            직접 눈으로 확인하며 깊이 있게 이해할 수 있도록 도와줍니다.
+        </p>
+        <p class="subtitle-text">
+            왼쪽 메뉴에서 원하는 알고리즘 페이지를 선택하여 학습을 시작해보세요!
+        </p>
+        <!-- 실제 Streamlit 앱에서는 버튼 클릭 시 페이지 이동이 아닌,
+             Streamlit 사이드바를 통해 페이지를 선택하게 됩니다.
+             이 버튼은 시각적인 안내 역할만 합니다. -->
+        <a href="#" class="cta-button">시작하기</a>
+        <p class="footer-text">데이터 구조를 마스터하는 여정, 지금 시작됩니다!</p>
+    </div>
+</body>
+</html>
