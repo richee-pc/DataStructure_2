@@ -14,10 +14,14 @@ SEARCHING_HTML_FILE_PATH = "search_algorithms.html"
 
 # HTML 파일을 읽어오는 함수
 def load_html_file(file_path):
+    # 디버깅: 파일 존재 여부 출력
+    st.info(f"'{file_path}' 파일 존재 여부 확인: {os.path.exists(file_path)}")
+    
     # 파일이 존재하는지 확인
     if not os.path.exists(file_path):
         st.error(f"오류: HTML 파일이 '{file_path}' 경로에 없습니다. 파일을 업로드하거나 경로를 확인해주세요.")
-        st.stop() # 파일이 없으면 앱 실행 중지
+        # 파일이 없으면 앱 실행을 중지하고 오류 메시지를 명확히 표시
+        st.stop() 
     
     with open(file_path, "r", encoding="utf-8") as f:
         html_content = f.read()
@@ -31,6 +35,11 @@ page_selection = st.sidebar.radio(
 
 st.title("자료구조 교육 시뮬레이터 🧑‍💻")
 st.write("다양한 자료구조 알고리즘의 동작을 시뮬레이션을 통해 직접 확인하고 배워보세요!")
+
+# 디버깅: 현재 작업 디렉토리와 파일 목록 출력
+st.info(f"현재 Streamlit 앱이 실행되는 경로: `{os.getcwd()}`")
+st.info(f"현재 디렉토리의 파일 목록: `{os.listdir()}`")
+
 
 if page_selection == "정렬 알고리즘":
     st.header("정렬 알고리즘의 세계 🚀")
