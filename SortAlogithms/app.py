@@ -11,6 +11,8 @@ st.set_page_config(layout="wide", page_title="자료구조 교육 시뮬레이�
 SORTING_HTML_FILE_PATH = "sorting_algorithms.html" 
 # 두 번째 HTML 파일 (탐색 알고리즘)
 SEARCHING_HTML_FILE_PATH = "search_algorithms.html"
+# 세 번째 HTML 파일 (표지 페이지)
+COVER_PAGE_HTML_FILE_PATH = "cover_page.html"
 
 # HTML 파일을 읽어오는 함수
 def load_html_file(file_path):
@@ -30,7 +32,7 @@ def load_html_file(file_path):
 st.sidebar.title("탐색 메뉴 📚")
 page_selection = st.sidebar.radio(
     "원하는 알고리즘 페이지를 선택하세요:",
-    ("정렬 알고리즘", "탐색 알고리즘")
+    ("표지 페이지", "정렬 알고리즘", "탐색 알고리즘") # '표지 페이지' 옵션 추가
 )
 
 st.title("자료구조 교육 시뮬레이터 🧑‍💻")
@@ -41,8 +43,12 @@ st.info(f"현재 Streamlit 앱이 실행되는 경로: `{os.getcwd()}`")
 st.info(f"현재 디렉토리의 파일 목록: `{os.listdir()}`")
 
 
-if page_selection == "정렬 알고리즘":
-    st.header("정렬 알고리즘의 세계 🚀")
+if page_selection == "표지 페이지": # 새로운 표지 페이지 조건 추가
+    st.header("자료구조 & 알고리즘 교육에 오신 것을 환영합니다! 🎉")
+    html_content = load_html_file(COVER_PAGE_HTML_FILE_PATH)
+    components.html(html_content, height=700, scrolling=False) # 표지 페이지는 짧으므로 height를 조절
+elif page_selection == "정렬 알고리즘":
+    st.header("정렬 알고리즘의 세계 �")
     html_content = load_html_file(SORTING_HTML_FILE_PATH)
     # height와 scrolling 속성은 필요에 따라 조절할 수 있습니다.
     components.html(html_content, height=10000, scrolling=True) # 정렬 페이지는 내용이 길므로 height를 충분히 줌
@@ -55,3 +61,4 @@ elif page_selection == "탐색 알고리즘":
 st.markdown("---")
 st.write("질문이 있으시면 언제든지 문의해주세요!")
 
+�
