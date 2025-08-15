@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정렬 알고리즘의 모든 것</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* 밝은 배경색 */
+            color: #2d3748; /* 기본 텍스트 색상 */
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 1.5rem; /* 반응형 패딩 */
+        }
+        .section-title {
+            border-left: 6px solid #4299e1; /* 왼쪽 파란색 선 */
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+            color: #2b6cb0; /* 제목 색상 강조 */
+        }
+        .code-block {
+            background-color: #2d3748; /* 어두운 배경 */
+            color: #a0aec0; /* 밝은 텍스트 */
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto; /* 코드 블록 스크롤 */
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .interactive-section {
+            background-color: #e2e8f0; /* 상호작용 섹션 배경 */
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-top: 1.5rem;
+        }
+        .button-primary {
+            background-color: #4299e1;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .button-primary:hover {
+            background-color: #3182ce;
+        }
+        /* 커스텀 모달 스타일 */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            margin: auto;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #4a5568;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .list-visualization {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 1rem;
+            min-height: 50px; /* Ensure space even when empty */
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+            align-items: flex-end; /* 막대가 아래에서 위로 자라도록 */
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+            background-color: #ffffff; /* 시뮬레이션 배경 흰색 */
+            border-radius: 0.5rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+            padding: 0.5rem;
+        }
+        .list-item {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* 텍스트가 막대 상단에 위치하도록 */
+            background-color: #63b3ed; /* 기본 파란색 막대 */
+            color: white;
+            border-radius: 0.25rem;
+            width: 30px; /* 고정 너비 */
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.3s ease, height 0.3s ease;
+            position: relative;
+            font-size: 0.8rem;
+            line-height: 1; /* 텍스트가 위아래로 꽉 차지 않도록 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 막대에도 그림자 */
+        }
+        .list-item span {
+            position: absolute;
+            top: -1.2em; /* 값 표시 위치 */
+            color: #2d3748;
+            font-weight: bold;
+        }
+        .list-item.active {
+            background-color: #f6ad55; /* 활성 항목 색상 (주황색) */
+            transform: scaleY(1.05); /* 약간 확대 */
+        }
+        .list-item.sorted {
+            background-color: #48bb78; /* 정렬 완료 항목 색상 (녹색) */
+            box-shadow: 0 0 8px rgba(72, 187, 120, 0.6); /* 정렬 완료 시 발광 효과 */
+        }
+        .list-item.pivot {
+            background-color: #e53e3e; /* 피벗 항목 색상 (빨간색) */
+            border: 2px solid #a00;
+        }
+        .list-item.comparing {
+            background-color: #ecc94b; /* 비교 중 항목 (노란색) */
+            border: 1px dashed #d69e2e;
+        }
+        .list-item.swapping {
+            background-color: #9f7aea; /* 교환 중 항목 (보라색) */
+            border: 2px solid #805ad5;
+        }
+        .algorithm-explanation {
+            background-color: #edf2f7; /* 동작 방식 설명 배경색 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #cbd5e0;
+        }
+        .algorithm-explanation p {
+            margin-bottom: 0.5rem;
+        }
+        .algorithm-explanation .example-step {
+            font-weight: 600;
+            color: #3182ce;
+        }
+
+        /* --- Static Visualization CSS --- */
+        .static-visualization-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .static-visualization-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            background-color: #f7fafc; /* light background for each step */
+            border: 1px solid #e2e8f0;
+            flex-wrap: wrap; /* For smaller screens */
+        }
+        .static-array {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap; /* Allow wrapping */
+        }
+        .static-array-item {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 30px;
+            height: 30px;
+            background-color: #a0aec0; /* default grey */
+            color: white;
+            font-weight: bold;
+            border-radius: 0.25rem;
+            padding: 0 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .static-array-item.static-active {
+            background-color: #f6ad55; /* orange (active) */
+        }
+        .static-array-item.static-comparing {
+            background-color: #ecc94b; /* yellow (comparing) */
+        }
+        .static-array-item.static-swapping {
+            background-color: #9f7aea; /* purple (swapping) */
+        }
+        .static-array-item.static-pivot {
+            background-color: #e53e3e; /* red (pivot) */
+        }
+        .static-array-item.static-sorted {
+            background-color: #48bb78; /* green (sorted) */
+        }
+        .static-step-description {
+            font-size: 0.9rem;
+            color: #4a5568;
+            flex-grow: 1; /* Take up remaining space */
+            margin-left: 0.5rem;
+        }
+
+        /* Merge Sort / Divide & Conquer Specific CSS */
+        .nested-visual-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.5rem;
+            border: 1px dashed #a0aec0;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+            background-color: #e2e8f0;
+        }
+        .nested-visual-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .arrow-down {
+            font-size: 1.5rem;
+            color: #4299e1;
+            margin: 0.2rem 0;
+        }
+        .arrow-up {
+            font-size: 1.5rem;
+            color: #48bb78;
+            margin: 0.2rem 0;
+            transform: rotate(180deg);
+        }
+        .merge-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #90cdf4;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            background-color: #ebf8ff;
+        }
+        .merge-group + .merge-group {
+            margin-left: 1rem;
+        }
+
+        /* Radix Sort Static Example CSS */
+        .radix-buckets-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background-color: #f7fafc;
+            border-radius: 0.5rem;
+            border: 1px solid #cbd5e0;
+        }
+        .radix-bucket-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            border-bottom: 1px dashed #e2e8f0;
+            padding-bottom: 0.25rem;
+        }
+        .radix-bucket-row:last-child {
+            border-bottom: none;
+        }
+        .radix-bucket-label {
+            font-weight: bold;
+            color: #2b6cb0;
+            width: 60px; /* consistent width for labels */
+            flex-shrink: 0;
+        }
+        .radix-bucket-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2rem;
+        }
+        .radix-bucket-item {
+            background-color: #63b3ed;
+            color: white;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.2rem;
+            font-size: 0.8rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Radix Sort Simulation styles */
+        .radix-sim-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            background-color: #ffffff;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .radix-sim-array {
+            display: flex;
+            gap: 0.5rem; /* Increased gap */
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0.5rem; /* Padding for visual separation */
+            border-bottom: 1px solid #e2e8f0; /* Separator */
+            width: 100%; /* Take full width */
+            min-height: 40px; /* Ensure visibility even if array is small */
+        }
+        .radix-sim-array-item {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 35px; /* Slightly larger for numbers */
+            height: 35px;
+            background-color: #63b3ed; /* Consistent with other list-items */
+            color: white;
+            font-weight: bold;
+            border-radius: 0.375rem; /* Rounded corners */
+            padding: 0 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .radix-sim-array-item.active {
+            background-color: #f6ad55; /* Orange for active */
+        }
+        .radix-sim-array-item.sorted {
+            background-color: #48bb78; /* Green for sorted */
+        }
+
+        .radix-sim-buckets {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            background-color: #f0f4f8;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+        }
+        .radix-sim-bucket-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.2rem 0;
+            border-bottom: 1px dotted #cbd5e0;
+        }
+        .radix-sim-bucket-row:last-child {
+            border-bottom: none;
+        }
+        .radix-sim-bucket-label {
+            font-weight: bold;
+            color: #2b6cb0;
+            width: 50px; /* Adjust as needed */
+            flex-shrink: 0;
+            text-align: right;
+        }
+        .radix-sim-bucket-items-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2rem;
+            flex-grow: 1;
+            min-height: 1.5rem; /* Ensure space for empty buckets */
+            align-items: center;
+            padding: 0.2rem; /* Padding inside bucket item container */
+            border: 1px dashed #a0aec0; /* Border for the bucket area */
+            border-radius: 0.375rem;
+            background-color: #ffffff; /* White background for items */
+        }
+        .radix-sim-bucket-item {
+            background-color: #63b3ed;
+            color: white;
+            padding: 0.2rem 0.5rem; /* More padding */
+            border-radius: 0.25rem; /* Slightly more rounded */
+            font-size: 0.85rem; /* Slightly larger font */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            flex-shrink: 0; /* Prevent items from shrinking */
+            transition: background-color 0.3s ease;
+        }
+
+
+        /* 반응형 디자인을 위한 미디어 쿼리 (Tailwind는 클래스로 처리하지만, 예시를 위해 추가) */
+        @media (min-width: 768px) {
+            .container {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased leading-normal">
+    <div class="container bg-white shadow-xl rounded-xl my-8">
+        <!-- 제목 및 개요 섹션 -->
+        <header class="text-center py-8 border-b-2 border-gray-200">
+            <h1 class="text-5xl font-extrabold text-blue-700 mb-4 tracking-tight">정렬 알고리즘의 세계 🚀</h1>
+            <p class="text-lg text-gray-700 max-w-2xl mx-auto">
+                데이터를 효율적으로 관리하고 탐색하는 데 필수적인 정렬 알고리즘에 대해 깊이 있게 탐구해봅시다.
+                다양한 정렬 방법의 원리, 성능, 그리고 실제 코드 예시를 통해 핵심 개념을 마스터하세요!
+            </p>
+        </header>
+
+        <!-- 정렬 알고리즘 소개 -->
+        <section class="py-8 px-6">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6">정렬이란 무엇인가?</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                <strong>정렬(Sorting)</strong>은 자료들을 특정 기준(예: 크기 순서)에 따라 일정한 순서로 나열하는 작업을 의미합니다.
+                컴퓨터 과학의 가장 기본적이고 중요한 알고리즘 중 하나로, 효율적인 자료 탐색을 위해 필수적입니다.
+                예를 들어, 사전에서 단어를 찾거나, 전화번호부에서 이름을 찾는 것과 같이 정렬된 데이터는 훨씬 빠르게 검색할 수 있습니다.
+            </p>
+            <p class="text-gray-700 leading-relaxed">
+                다양한 정렬 알고리즘은 각기 다른 동작 방식, 시간 복잡도, 그리고 장단점을 가집니다.
+                따라서 주어진 데이터의 특성과 요구사항에 따라 가장 적합한 정렬 알고리즘을 선택하는 것이 중요합니다.
+            </p>
+        </section>
+
+        <hr class="border-gray-300 mx-6">
+
+        <!-- 선택 정렬 섹션 -->
+        <section id="selection-sort" class="py-8 px-6">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6">선택 정렬 (Selection Sort) 🧐</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                <strong>개념 설명:</strong> 선택 정렬은 배열에서 가장 작은(또는 가장 큰) 원소를 찾아 배열의 맨 앞(또는 맨 뒤)으로 보내는 과정을 반복하여 정렬하는 알고리즘입니다.
+                각 반복에서 정렬되지 않은 부분에서 최솟값을 찾아 정렬된 부분의 올바른 위치로 교환합니다.
+            </p>
+            <div class="algorithm-explanation">
+                <p><strong>동작 방식 예시: 배열 [5, 3, 8, 1, 2]를 오름차순으로 정렬</strong></p>
+                <div class="static-visualization-container">
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">초기 상태</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-active">5</span>
+                            <span class="static-array-item static-comparing">3</span>
+                            <span class="static-array-item static-comparing">8</span>
+                            <span class="static-array-item static-comparing">1</span>
+                            <span class="static-array-item static-comparing">2</span>
+                        </div>
+                        <span class="static-step-description">1단계: 첫 번째 위치 (5)에 들어갈 최소값 (1)을 찾고</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-swapping">1</span>
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item static-swapping">5</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">1단계: 5와 1을 교환 → 1은 정렬 완료</span>
+                    </div>
+                     <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-active">3</span>
+                            <span class="static-array-item static-comparing">8</span>
+                            <span class="static-array-item static-comparing">5</span>
+                            <span class="static-array-item static-comparing">2</span>
+                        </div>
+                        <span class="static-step-description">2단계: 정렬된 1을 제외한 나머지에서 최소값 (2)을 찾고</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-swapping">2</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item static-swapping">3</span>
+                        </div>
+                        <span class="static-step-description">2단계: 3과 2를 교환 → 2는 정렬 완료</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-sorted">2</span>
+                            <span class="static-array-item static-swapping">3</span>
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item static-swapping">8</span>
+                        </div>
+                        <span class="static-step-description">3단계: 정렬된 1, 2를 제외한 나머지에서 최소값 (3)을 찾고 8과 교환 → 3은 정렬 완료</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-sorted">2</span>
+                            <span class="static-array-item static-sorted">3</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">최종 정렬 완료</span>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2 mb-4">
+                <li><strong>시간 복잡도:</strong>
+                    <ul>
+                        <li>최선: O(N^2)</li>
+                        <li>평균: O(N^2)</li>
+                        <li>최악: O(N^2)</li>
+                    </ul>
+                </li>
+                <li><strong>장점:</strong>
+                    <ul>
+                        <li>데이터의 양이 적을 때 간단하게 구현할 수 있습니다.</li>
+                        <li>메모리 사용량이 매우 적습니다 (O(1)).</li>
+                    </ul>
+                </li>
+                <li><strong>단점:</strong>
+                    <ul>
+                        <li>효율성이 낮아 데이터의 양이 많을수록 성능이 급격히 저하됩니다.</li>
+                        <li>불안정 정렬입니다 (동일한 값의 상대적 순서가 바뀔 수 있음).</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-6 mb-4">C 실제 코드 예시</h3>
+            <pre class="code-block">
+                <code id="selectionSortCode">
+// SWAP 매크리는 실제 C 코드에서 정의되어 있어야 합니다.
+// #define SWAP(x, y, t) ((t) = (x), (x)=(y), (y) = (t))
+
+void selection_sort(int list[], int n) {
+    int i, j, least, temp; // 반복문 변수, 최소값 인덱스, 임시 저장 변수
+
+    // 배열의 마지막 원소를 제외하고 반복 (마지막 원소는 자동으로 정렬됨)
+    for (i = 0; i < n - 1; i++) {
+        least = i; // 현재 정렬되지 않은 부분의 첫 번째 원소를 최소값으로 가정
+
+        // 현재 위치(i) 다음부터 배열 끝까지 최소값 탐색
+        for (j = i + 1; j < n; j++) {
+            if (list[j] < list[least]) {
+                least = j; // 더 작은 값을 찾으면 최소값 인덱스 업데이트
+            }
+        }
+
+        // 찾은 최소값(list[least])과 현재 위치(list[i])의 원소를 교환
+        // SWAP(list[i], list[least], temp);
+        temp = list[i];
+        list[i] = list[least];
+        list[least] = temp;
+    }
+}
+                </code>
+            </pre>
+            <button class="button-primary mt-4" onclick="copyCode('selectionSortCode')">코드 복사</button>
+
+            <div class="interactive-section mt-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">선택 정렬 시뮬레이션</h3>
+                <p class="text-gray-700 mb-4">배열을 입력하고 '정렬 시작' 버튼을 눌러 선택 정렬의 동작을 시각적으로 확인해보세요!</p>
+                <input type="text" id="selectionInput" placeholder="콤마로 구분된 숫자 입력 (예: 5,3,8,1,2,7)" class="w-full p-2 border border-gray-300 rounded-md shadow-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex space-x-4">
+                    <button class="button-primary" onclick="startSelectionSortSimulation()">정렬 시작</button>
+                    <button class="button-primary bg-gray-500 hover:bg-gray-600" onclick="resetSelectionSortSimulation()">초기화</button>
+                </div>
+                <div id="selectionVisualization" class="list-visualization mt-4"></div>
+                <div id="selectionSteps" class="mt-4 text-gray-700"></div>
+            </div>
+        </section>
+
+        <hr class="border-gray-300 mx-6">
+
+        <!-- 삽입 정렬 섹션 -->
+        <section id="insertion-sort" class="py-8 px-6">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6">삽입 정렬 (Insertion Sort) 🃏</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                <strong>개념 설명:</strong> 삽입 정렬은 배열의 모든 요소를 앞에서부터 차례대로 이미 정렬된 부분 배열에 삽입하면서 정렬을 완성하는 알고리즘입니다.
+                마치 카드놀이에서 새로운 카드를 올바른 위치에 끼워 넣는 것과 유사합니다.
+            </p>
+            <div class="algorithm-explanation">
+                <p><strong>동작 방식 예시: 배열 [5, 3, 8, 1, 2]를 오름차순으로 정렬</strong></p>
+                <div class="static-visualization-container">
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">초기 상태</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-active">3</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">1단계: 3을 5와 비교하여 앞(왼쪽)으로 이동. → [3, 5, 8, 1, 2]</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">3</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-active">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">2단계: 8은 5보다 크므로 제 위치. → [3, 5, 8, 1, 2]</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-active">1</span>
+                            <span class="static-array-item static-sorted">3</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">3단계: 1을 가져와 8, 5, 3보다 작으므로 모두 뒤로 밀고 1을 삽입. → [1, 3, 5, 8, 2]</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-active">2</span>
+                            <span class="static-array-item static-sorted">3</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">4단계: 2를 가져와 3보다 작고 1보다 크므로 3을 뒤로 밀고 2를 삽입. → [1, 2, 3, 5, 8]</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-sorted">2</span>
+                            <span class="static-array-item static-sorted">3</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">최종 정렬 완료</span>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2 mb-4">
+                <li><strong>시간 복잡도:</strong>
+                    <ul>
+                        <li>최선: O(N) (거의 정렬된 경우)</li>
+                        <li>평균: O(N^2)</li>
+                        <li>최악: O(N^2) (역순으로 정렬된 경우)</li>
+                    </ul>
+                </li>
+                <li><strong>장점:</strong>
+                    <ul>
+                        <li>데이터의 양이 적거나 거의 정렬되어 있는 경우 매우 효율적입니다.</li>
+                        <li>구현이 간단하고, 안정 정렬입니다 (동일한 값의 상대적 순서가 보존됨).</li>
+                    </ul>
+                </li>
+                <li><strong>단점:</strong>
+                    <ul>
+                        <li>데이터의 양이 많아질수록 성능이 급격히 저하됩니다.</li>
+                        <li>많은 이동 연산이 필요할 수 있습니다.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-6 mb-4">C 실제 코드 예시</h3>
+            <pre class="code-block">
+                <code id="insertionSortCode">
+void insertion_sort(int list[], int n) {
+    int i, j, key; // 반복문 변수, 삽입할 요소
+
+    // 두 번째 요소부터 시작하여 배열의 모든 요소를 반복
+    for (i = 1; i < n; i++) {
+        key = list[i]; // 현재 삽입할 요소 저장
+        j = i - 1;     // key와 비교할 정렬된 부분의 마지막 인덱스
+
+        // key가 정렬된 부분의 요소들(list[j])보다 작으면, 요소들을 한 칸씩 뒤로 밀어냄
+        while (j >= 0 && list[j] > key) {
+            list[j + 1] = list[j]; // 요소를 오른쪽으로 이동
+            j--;                   // 다음 왼쪽 요소와 비교하기 위해 인덱스 감소
+        }
+        list[j + 1] = key; // key를 올바른 위치에 삽입
+    }
+}
+                </code>
+            </pre>
+            <button class="button-primary mt-4" onclick="copyCode('insertionSortCode')">코드 복사</button>
+
+            <div class="interactive-section mt-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">삽입 정렬 시뮬레이션</h3>
+                <p class="text-gray-700 mb-4">배열을 입력하고 '정렬 시작' 버튼을 눌러 삽입 정렬의 동작을 시각적으로 확인해보세요!</p>
+                <input type="text" id="insertionInput" placeholder="콤마로 구분된 숫자 입력 (예: 5,3,8,1,2,7)" class="w-full p-2 border border-gray-300 rounded-md shadow-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex space-x-4">
+                    <button class="button-primary" onclick="startInsertionSortSimulation()">정렬 시작</button>
+                    <button class="button-primary bg-gray-500 hover:bg-gray-600" onclick="resetInsertionSortSimulation()">초기화</button>
+                </div>
+                <div id="insertionVisualization" class="list-visualization mt-4"></div>
+                <div id="insertionSteps" class="mt-4 text-gray-700"></div>
+            </div>
+        </section>
+
+        <hr class="border-gray-300 mx-6">
+
+        <!-- 버블 정렬 섹션 -->
+        <section id="bubble-sort" class="py-8 px-6">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6">버블 정렬 (Bubble Sort) 🎈</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                <strong>개념 설명:</strong> 버블 정렬은 인접한 두 요소를 비교하여 정렬 순서가 맞지 않으면 서로 교환하는 과정을 반복하는 알고리즘입니다.
+                가장 큰(또는 가장 작은) 요소가 마치 거품처럼 배열의 한쪽 끝으로 "떠오르는" 방식으로 동작합니다.
+            </p>
+            <div class="algorithm-explanation">
+                <p><strong>동작 방식 예시: 배열 [5, 3, 8, 1, 2]를 오름차순으로 정렬</strong></p>
+                <div class="static-visualization-container">
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">초기 상태</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-swapping">3</span>
+                            <span class="static-array-item static-swapping">5</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">1차 패스 (5, 3) 비교 -> 교환: [3, 5, 8, 1, 2]</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item static-comparing">5</span>
+                            <span class="static-array-item static-comparing">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">1차 패스 (5, 8) 비교 -> 유지: [3, 5, 8, 1, 2]</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item static-swapping">1</span>
+                            <span class="static-array-item static-swapping">8</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">1차 패스 (8, 1) 비교 -> 교환: [3, 5, 1, 8, 2]</span>
+                    </div>
+                     <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item static-swapping">2</span>
+                            <span class="static-array-item static-swapping static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">1차 패스 (8, 2) 비교 -> 교환: [3, 5, 1, 2, 8] (8이 맨 뒤로 정렬)</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item static-swapping">1</span>
+                            <span class="static-array-item static-swapping">5</span>
+                            <span class="static-array-item">2</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">2차 패스 (5, 1) 비교 -> 교환: [3, 1, 5, 2, 8]</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item static-swapping">2</span>
+                            <span class="static-array-item static-swapping static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">2차 패스 (5, 2) 비교 -> 교환: [3, 1, 2, 5, 8] (5가 제 위치로 정렬)</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-swapping">1</span>
+                            <span class="static-array-item static-swapping">3</span>
+                            <span class="static-array-item static-sorted">2</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">3차 패스 (3, 1) 비교 -> 교환: [1, 3, 2, 5, 8] (3이 제 위치로 정렬)</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-sorted">2</span>
+                            <span class="static-array-item static-sorted">3</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">최종 정렬 완료</span>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2 mb-4">
+                <li><strong>시간 복잡도:</strong>
+                    <ul>
+                        <li>최선: O(N) (이미 정렬된 경우, 최적화 시)</li>
+                        <li>平均: O(N^2)</li>
+                        <li>최악: O(N^2)</li>
+                    </ul>
+                </li>
+                <li><strong>장점:</strong>
+                    <ul>
+                        <li>구현이 매우 간단합니다.</li>
+                        <li>코드가 직관적입니다.</li>
+                    </ul>
+                </li>
+                <li><strong>단점:</strong>
+                    <ul>
+                        <li>가장 비효율적인 정렬 알고리즘 중 하나입니다.</li>
+                        <li>많은 교환 연산이 필요하여 실제 사용에는 거의 적합하지 않습니다.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-6 mb-4">C 실제 코드 예시</h3>
+            <pre class="code-block">
+                <code id="bubbleSortCode">
+// SWAP 매크리는 실제 C 코드에서 정의되어 있어야 합니다.
+// #define SWAP(x, y, t) ((t) = (x), (x)=(y), (y) = (t))
+
+void bubble_sort(int list[], int n) {
+    int i, j, temp; // 반복문 변수, 임시 저장 변수
+    int swapped;    // 교환 발생 여부 플래그 (최적화)
+
+    // 배열의 크기 - 1 만큼 패스 반복
+    for (i = 0; i < n - 1; i++) {
+        swapped = 0; // 각 패스 시작 시 교환 플래그 초기화
+
+        // 현재 패스에서 비교할 범위 (이미 정렬된 마지막 i개 원소는 제외)
+        for (j = 0; j < n - 1 - i; j++) {
+            // 인접한 두 요소를 비교하여 앞의 요소가 더 크면 교환
+            if (list[j] > list[j + 1]) {
+                // SWAP(list[j], list[j+1], temp);
+                temp = list[j];
+                list[j] = list[j + 1];
+                list[j + 1] = temp;
+                swapped = 1; // 교환 발생
+            }
+        }
+        // 한 패스 동안 교환이 전혀 없었다면 이미 정렬된 상태이므로 종료
+        if (swapped == 0) {
+            break;
+        }
+    }
+}
+                </code>
+            </pre>
+            <button class="button-primary mt-4" onclick="copyCode('bubbleSortCode')">코드 복사</button>
+
+            <div class="interactive-section mt-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">버블 정렬 시뮬레이션</h3>
+                <p class="text-gray-700 mb-4">배열을 입력하고 '정렬 시작' 버튼을 눌러 버블 정렬의 동작을 시각적으로 확인해보세요!</p>
+                <input type="text" id="bubbleInput" placeholder="콤마로 구분된 숫자 입력 (예: 5,3,8,1,2,7)" class="w-full p-2 border border-gray-300 rounded-md shadow-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex space-x-4">
+                    <button class="button-primary" onclick="startBubbleSortSimulation()">정렬 시작</button>
+                    <button class="button-primary bg-gray-500 hover:bg-gray-600" onclick="resetBubbleSortSimulation()">초기화</button>
+                </div>
+                <div id="bubbleVisualization" class="list-visualization mt-4"></div>
+                <div id="bubbleSteps" class="mt-4 text-gray-700"></div>
+            </div>
+        </section>
+
+        <hr class="border-gray-300 mx-6">
+
+        <!-- 퀵 정렬 섹션 -->
+        <section id="quick-sort" class="py-8 px-6">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6">퀵 정렬 (Quick Sort) ⚡</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                <strong>개념 설명:</strong> 퀵 정렬은 '분할 정복(Divide and Conquer)' 전략을 사용하는 정렬 알고리즘 중 하나로, 평균적으로 가장 빠른 정렬 속도를 가집니다.
+                하나의 '피벗(pivot)' 요소를 선택하고, 이 피벗을 기준으로 배열을 두 개의 부분 배열로 나눕니다.
+                피벗보다 작은 요소들은 피벗의 왼쪽으로, 큰 요소들은 피벗의 오른쪽으로 배치한 후, 각 부분 배열에 대해 재귀적으로 퀵 정렬을 수행합니다.
+            </p>
+            <div class="algorithm-explanation">
+                <p><strong>동작 방식 예시: 배열 [5, 3, 8, 1, 2]를 오름차순으로 정렬 (피벗은 항상 첫 번째 요소)</strong></p>
+                <div class="static-visualization-container">
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">초기 상태</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-pivot">5</span>
+                            <span class="static-array-item static-comparing">3</span>
+                            <span class="static-array-item static-comparing">8</span>
+                            <span class="static-array-item static-comparing">1</span>
+                            <span class="static-array-item static-comparing">2</span>
+                        </div>
+                        <span class="static-step-description">1단계: 피벗 5를 기준으로 분할 시작 (피벗: 5)</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-active">3</span>
+                            <span class="static-array-item static-active">1</span>
+                            <span class="static-array-item static-active">2</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-active">8</span>
+                        </div>
+                        <span class="static-step-description">1단계 후: [3, 1, 2, 5, 8] (피벗 5는 정렬 완료)</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-pivot">3</span>
+                            <span class="static-array-item static-comparing">1</span>
+                            <span class="static-array-item static-comparing">2</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-active">8</span>
+                        </div>
+                        <span class="static-step-description">2단계: 왼쪽 부분 배열 [3, 1, 2]에 대해 퀵 정렬 (피벗: 3)</span>
+                    </div>
+                     <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-sorted">2</span>
+                            <span class="static-array-item static-sorted">3</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                        <span class="static-step-description">재귀적으로 정렬 반복 후 최종 완료: [1, 2, 3, 5, 8]</span>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2 mb-4">
+                <li><strong>시간 복잡도:</strong>
+                    <ul>
+                        <li>최선: O(N log N)</li>
+                        <li>평균: O(N log N)</li>
+                        <li>최악: O(N^2) (이미 정렬되어 있거나 역순으로 정렬된 경우, 피벗 선택에 따라 발생)</li>
+                    </ul>
+                </li>
+                <li><strong>장점:</strong>
+                    <ul>
+                        <li>평균적으로 매우 빠릅니다.</li>
+                        <li>대부분의 경우 안정적인 성능을 보입니다.</li>
+                        <li>대부분의 정렬이 내부(in-place)에서 이루어져 추가적인 메모리 공간이 적게 필요합니다.</li>
+                    </ul>
+                </li>
+                <li><strong>단점:</strong>
+                    <ul>
+                        <li>최악의 경우 성능이 매우 나빠질 수 있습니다 (O(N^2)).</li>
+                        <li>안정 정렬이 아닙니다.</li>
+                        <li>재귀 호출로 인해 스택 오버플로우가 발생할 수 있습니다 (깊은 재귀 시).</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-6 mb-4">C 실제 코드 예시</h3>
+            <pre class="code-block">
+                <code id="quickSortCode">
+// SWAP 매크리는 실제 C 코드에서 정의되어 있어야 합니다.
+// #define SWAP(x, y, t) ((t) = (x), (x)=(y), (y) = (t))
+
+// 배열을 분할하고 피벗의 최종 위치를 반환하는 함수 (첫 번째 요소를 피벗으로 사용)
+int partition(int list[], int low, int high) {
+    int pivot = list[low]; // 첫 번째 요소를 피벗으로 선택
+    int i = low + 1;      // 피벗보다 작거나 같은 요소들의 경계 인덱스 (피벗 다음부터 시작)
+    int j, temp;
+
+    // low + 1 부터 high 까지 반복
+    for (j = low + 1; j <= high; j++) {
+        // 현재 요소가 피벗보다 작으면
+        if (list[j] < pivot) {
+            // 현재 요소(list[j])와 i 위치의 요소(list[i])를 교환
+            // SWAP(list[i], list[j], temp);
+            temp = list[i];
+            list[i] = list[j];
+            list[j] = temp;
+            i++; // 경계 인덱스를 다음 위치로 이동
+        }
+    }
+    // 피벗(list[low])을 피벗보다 작은 요소들의 마지막 위치(i-1)와 교환하여 최종 위치에 배치
+    // SWAP(list[low], list[i - 1], temp);
+    temp = list[low];
+    list[low] = list[i - 1];
+    list[i - 1] = temp;
+
+    return (i - 1); // 피벗의 최종 위치 반환
+}
+
+// 퀵 정렬의 주 함수
+void quick_sort(int list[], int low, int high) {
+    // 배열이 비어있거나, 정렬할 부분이 없는 경우 (재귀 종료 조건)
+    if (low < high) {
+        // 배열을 분할하고 피벗의 최종 위치를 반환
+        int pi = partition(list, low, high);
+
+        // 피벗을 기준으로 왼쪽 부분 배열을 재귀적으로 정렬
+        quick_sort(list, low, pi - 1);
+        // 피벗을 기준으로 오른쪽 부분 배열을 재귀적으로 정렬
+        quick_sort(list, pi + 1, high);
+    }
+}
+                </code>
+            </pre>
+            <button class="button-primary mt-4" onclick="copyCode('quickSortCode')">코드 복사</button>
+
+            <div class="interactive-section mt-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">퀵 정렬 시뮬레이션</h3>
+                <p class="text-gray-700 mb-4">배열을 입력하고 '정렬 시작' 버튼을 눌러 퀵 정렬의 동작을 시각적으로 확인해보세요!</p>
+                <input type="text" id="quickInput" placeholder="콤마로 구분된 숫자 입력 (예: 5,3,8,1,2,7)" class="w-full p-2 border border-gray-300 rounded-md shadow-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex space-x-4">
+                    <button class="button-primary" onclick="startQuickSortSimulation()">정렬 시작</button>
+                    <button class="button-primary bg-gray-500 hover:bg-gray-600" onclick="resetQuickSortSimulation()">초기화</button>
+                </div>
+                <div id="quickVisualization" class="list-visualization mt-4"></div>
+                <div id="quickSteps" class="mt-4 text-gray-700"></div>
+            </div>
+        </section>
+
+        <hr class="border-gray-300 mx-6">
+
+        <!-- 병합 정렬 섹션 -->
+        <section id="merge-sort" class="py-8 px-6">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6">병합 정렬 (Merge Sort) 🧬</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                <strong>개념 설명:</strong> 병합 정렬은 '분할 정복(Divide and Conquer)' 전략을 사용하는 또 다른 정렬 알고리즘입니다.
+                배열을 절반으로 계속 나누어 더 이상 나눌 수 없을 때까지 쪼갠 다음,
+                쪼개진 작은 부분 배열들을 정렬하면서 다시 합쳐(병합) 전체 배열을 정렬합니다.
+            </p>
+            <div class="algorithm-explanation">
+                <p><strong>동작 방식 예시: 배열 [5, 3, 8, 1, 2]를 오름차순으로 정렬</strong></p>
+                <div class="static-visualization-container">
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">초기 상태</span>
+                    </div>
+                    <div class="nested-visual-block">
+                        <span class="static-step-description">분할 (Divide) ▼</span>
+                        <span class="arrow-down">↓</span>
+                        <div class="nested-visual-row">
+                            <div class="merge-group">
+                                <div class="static-array">
+                                    <span class="static-array-item">5</span>
+                                    <span class="static-array-item">3</span>
+                                    <span class="static-array-item">8</span>
+                                </div>
+                                <span class="arrow-down">↓</span>
+                                <div class="nested-visual-row">
+                                    <div class="merge-group">
+                                        <div class="static-array">
+                                            <span class="static-array-item">5</span>
+                                            <span class="static-array-item">3</span>
+                                        </div>
+                                        <span class="arrow-down">↓</span>
+                                        <div class="nested-visual-row">
+                                            <div class="merge-group"><div class="static-array"><span class="static-array-item">5</span></div></div>
+                                            <div class="merge-group"><div class="static-array"><span class="static-array-item">3</span></div></div>
+                                        </div>
+                                    </div>
+                                    <div class="merge-group"><div class="static-array"><span class="static-array-item">8</span></div></div>
+                                </div>
+                            </div>
+                            <div class="merge-group">
+                                <div class="static-array">
+                                    <span class="static-array-item">1</span>
+                                    <span class="static-array-item">2</span>
+                                </div>
+                                <span class="arrow-down">↓</span>
+                                <div class="nested-visual-row">
+                                    <div class="merge-group"><div class="static-array"><span class="static-array-item">1</span></div></div>
+                                    <div class="merge-group"><div class="static-array"><span class="static-array-item">2</span></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nested-visual-block">
+                        <span class="static-step-description">정복 (Conquer) ▲</span>
+                        <span class="arrow-up">↑</span>
+                        <div class="nested-visual-row">
+                            <div class="merge-group">
+                                <span class="static-step-description">병합: [5], [3] → [3,5]</span>
+                                <div class="static-array static-sorted">
+                                    <span class="static-array-item static-sorted">3</span>
+                                    <span class="static-array-item static-sorted">5</span>
+                                </div>
+                            </div>
+                            <div class="merge-group">
+                                <span class="static-step-description">병합: [1], [2] → [1,2]</span>
+                                <div class="static-array static-sorted">
+                                    <span class="static-array-item static-sorted">1</span>
+                                    <span class="static-array-item static-sorted">2</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="arrow-up">↑</span>
+                        <div class="nested-visual-row">
+                             <div class="merge-group">
+                                <span class="static-step-description">병합: [3,5], [8] → [3,5,8]</span>
+                                <div class="static-array static-sorted">
+                                    <span class="static-array-item static-sorted">3</span>
+                                    <span class="static-array-item static-sorted">5</span>
+                                    <span class="static-array-item static-sorted">8</span>
+                                </div>
+                             </div>
+                            <div class="merge-group">
+                                <span class="static-step-description">병합: [1], [2] → [1,2]</span>
+                                <div class="static-array static-sorted">
+                                    <span class="static-array-item static-sorted">1</span>
+                                    <span class="static-array-item static-sorted">2</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="arrow-up">↑</span>
+                        <div class="nested-visual-row">
+                             <div class="merge-group">
+                                <span class="static-step-description">최종 병합: [3,5,8], [1,2] → [1,2,3,5,8]</span>
+                                <div class="static-array static-sorted">
+                                    <span class="static-array-item static-sorted">1</span>
+                                    <span class="static-array-item static-sorted">2</span>
+                                    <span class="static-array-item static-sorted">3</span>
+                                    <span class="static-array-item static-sorted">5</span>
+                                    <span class="static-array-item static-sorted">8</span>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2 mb-4">
+                <li><strong>시간 복잡도:</strong>
+                    <ul>
+                        <li>최선: O(N log N)</li>
+                        <li>평균: O(N log N)</li>
+                        <li>최악: O(N log N)</li>
+                    </ul>
+                </li>
+                <li><strong>장점:</strong>
+                    <ul>
+                        <li>데이터 분포에 상관없이 항상 일정한 O(N log N)의 시간 복잡도를 보장합니다.</li>
+                        <li>안정 정렬입니다.</li>
+                        <li>연결 리스트 정렬에 효율적입니다.</li>
+                    </ul>
+                </li>
+                <li><strong>단점:</b>
+                    <ul>
+                        <li>추가적인 메모리 공간 (O(N))이 필요합니다.</li>
+                        <li>데이터 양이 적을 때는 다른 간단한 정렬보다 느릴 수 있습니다.</li>
+                        <li>재귀 호출의 오버헤드가 있습니다.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-6 mb-4">C 실제 코드 예시</h3>
+            <pre class="code-block">
+                <code id="mergeSortCode">
+#include <stdlib.h> // malloc, free 사용
+
+// 두 개의 정렬된 부분 배열을 병합하는 함수
+void merge(int list[], int start, int mid, int end) {
+    int i, j, k;
+    int *temp_list; // 임시 배열
+
+    // 임시 배열 할당
+    temp_list = (int *)malloc(sizeof(int) * (end - start + 1));
+    if (temp_list == NULL) {
+        // 메모리 할당 실패 처리 (실제 애플리케이션에서는 에러 처리 필요)
+        return;
+    }
+
+    i = start;     // 왼쪽 부분 배열의 시작 인덱스
+    j = mid + 1;   // 오른쪽 부분 배열의 시작 인덱스
+    k = 0;         // 임시 배열의 현재 인덱스
+
+    // 양쪽 부분 배열에 요소가 남아있는 동안 비교하여 임시 배열에 추가
+    while (i <= mid && j <= end) {
+        if (list[i] <= list[j]) {
+            temp_list[k++] = list[i++];
+        } else {
+            temp_list[k++] = list[j++];
+        }
+    }
+
+    // 왼쪽 부분 배열에 남은 요소들을 임시 배열에 추가
+    while (i <= mid) {
+        temp_list[k++] = list[i++];
+    }
+
+    // 오른쪽 부분 배열에 남은 요소들을 임시 배열에 추가
+    while (j <= end) {
+        temp_list[k++] = list[j++];
+    }
+
+    // 임시 배열의 내용을 원래 배열로 복사
+    for (i = 0; i < (end - start + 1); i++) {
+        list[start + i] = temp_list[i];
+    }
+
+    free(temp_list); // 임시 배열 메모리 해제
+}
+
+// 병합 정렬의 주 함수
+void merge_sort(int list[], int start, int end) {
+    // 정렬할 부분이 두 개 이상의 요소를 가질 때만 분할
+    if (start < end) {
+        int mid = (start + end) / 2; // 중간 인덱스 계산
+
+        // 왼쪽 부분 배열 재귀적으로 정렬
+        merge_sort(list, start, mid);
+        // 오른쪽 부분 배열 재귀적으로 정렬
+        merge_sort(list, mid + 1, end);
+
+        // 정렬된 두 부분 배열을 병합
+        merge(list, start, mid, end);
+    }
+}
+                </code>
+            </pre>
+            <button class="button-primary mt-4" onclick="copyCode('mergeSortCode')">코드 복사</button>
+
+            <div class="interactive-section mt-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">병합 정렬 시뮬레이션</h3>
+                <p class="text-gray-700 mb-4">배열을 입력하고 '정렬 시작' 버튼을 눌러 병합 정렬의 동작을 시각적으로 확인해보세요!</p>
+                <input type="text" id="mergeInput" placeholder="콤마로 구분된 숫자 입력 (예: 5,3,8,1,2,7)" class="w-full p-2 border border-gray-300 rounded-md shadow-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex space-x-4">
+                    <button class="button-primary" onclick="startMergeSortSimulation()">정렬 시작</button>
+                    <button class="button-primary bg-gray-500 hover:bg-gray-600" onclick="resetMergeSortSimulation()">초기화</button>
+                </div>
+                <div id="mergeVisualization" class="list-visualization mt-4"></div>
+                <div id="mergeSteps" class="mt-4 text-gray-700"></div>
+            </div>
+        </section>
+
+        <hr class="border-gray-300 mx-6">
+
+        <!-- 셸 정렬 섹션 -->
+        <section id="shell-sort" class="py-8 px-6">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6">셸 정렬 (Shell Sort) 🐚</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                <strong>개념 설명:</strong> 셸 정렬은 삽입 정렬의 효율을 개선한 알고리즘입니다.
+                일정 간격(gap)을 가진 요소들끼리 묶어 삽입 정렬을 수행하고, 이 간격을 점차 줄여나가면서 전체 배열을 정렬합니다.
+                간격이 클 때는 멀리 떨어진 요소들을 빠르게 교환하여 대략적인 정렬을 하고, 간격이 작아질수록 거의 정렬된 상태에서 삽입 정렬의 효율을 높입니다.
+            </p>
+            <div class="algorithm-explanation">
+                <p><strong>동작 방식 예시: 배열 [5, 3, 8, 1, 2]를 오름차순으로 정렬</strong></p>
+                <div class="static-visualization-container">
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">5</span>
+                            <span class="static-array-item">3</span>
+                            <span class="static-array-item">8</span>
+                            <span class="static-array-item">1</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">초기 상태</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <span class="static-step-description">1단계: 간격(gap) = 2. 각 간격에 대한 삽입 정렬 수행.</span>
+                        <div class="nested-visual-block">
+                            <span class="static-step-description">간격 2 그룹 1: [5, 8, 2] → [2, 5, 8]</span>
+                            <span class="arrow-down">↓</span>
+                            <div class="static-array">
+                                <span class="static-array-item static-sorted">2</span>
+                                <span class="static-array-item">3</span>
+                                <span class="static-array-item static-sorted">5</span>
+                                <span class="static-array-item">1</span>
+                                <span class="static-array-item static-sorted">8</span>
+                            </div>
+                        </div>
+                        <div class="nested-visual-block">
+                            <span class="static-step-description">간격 2 그룹 2: [3, 1] → [1, 3]</span>
+                            <span class="arrow-down">↓</span>
+                            <div class="static-array">
+                                <span class="static-array-item">2</span>
+                                <span class="static-array-item static-sorted">1</span>
+                                <span class="static-array-item">5</span>
+                                <span class="static-array-item static-sorted">3</span>
+                                <span class="static-array-item">8</span>
+                            </div>
+                        </div>
+                        <span class="static-step-description">간격 2 정렬 후 배열 상태:</span>
+                        <div class="static-array">
+                            <span class="static-array-item static-active">2</span>
+                            <span class="static-array-item static-active">1</span>
+                            <span class="static-array-item static-active">5</span>
+                            <span class="static-array-item static-active">3</span>
+                            <span class="static-array-item static-active">8</span>
+                        </div>
+                    </div>
+                    <div class="static-visualization-step">
+                        <span class="static-step-description">2단계: 간격(gap) = 1. 전체 배열에 대해 삽입 정렬 수행.</span>
+                        <div class="nested-visual-block">
+                            <span class="static-step-description">삽입 정렬: [2, 1, 5, 3, 8]</span>
+                            <span class="arrow-down">↓</span>
+                            <div class="static-array">
+                                <span class="static-array-item static-sorted">1</span>
+                                <span class="static-array-item static-sorted">2</span>
+                                <span class="static-array-item static-sorted">3</span>
+                                <span class="static-array-item static-sorted">5</span>
+                                <span class="static-array-item static-sorted">8</span>
+                            </div>
+                        </div>
+                        <span class="static-step-description">최종 정렬 완료</span>
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">1</span>
+                            <span class="static-array-item static-sorted">2</span>
+                            <span class="static-array-item static-sorted">3</span>
+                            <span class="static-array-item static-sorted">5</span>
+                            <span class="static-array-item static-sorted">8</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2 mb-4">
+                <li><strong>시간 복잡도:</strong>
+                    <ul>
+                        <li>최선: O(N log^2 N) 또는 O(N^(3/2)) (간격 수열에 따라 다름)</li>
+                        <li>평균: 간격 수열에 따라 다름 (일반적으로 O(N^(1.25)) ~ O(N^(1.6)))</li>
+                        <li>최악: O(N^2) (비효율적인 간격 수열의 경우)</li>
+                    </ul>
+                </li>
+                <li><strong>장점:</strong>
+                    <ul>
+                        <li>삽입 정렬보다 훨씬 빠르고, 구현이 비교적 간단합니다.</li>
+                        <li>제자리 정렬이므로 추가 메모리 공간이 거의 필요 없습니다.</li>
+                    </ul>
+                </li>
+                <li><strong>단점:</strong>
+                    <ul>
+                        <li>시간 복잡도가 간격 수열에 따라 크게 달라지므로 최적의 간격 수열을 찾는 것이 중요합니다.</li>
+                        <li>안정 정렬이 아닙니다.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-6 mb-4">C 실제 코드 예시</h3>
+            <pre class="code-block">
+                <code id="shellSortCode">
+void shell_sort(int list[], int n) {
+    int i, j, gap, temp; // 반복문 변수, 간격, 임시 저장 변수
+
+    // 간격을 설정하고 줄여나가는 외부 루프
+    // 일반적인 초기 간격: n/2 (다양한 간격 수열이 존재)
+    for (gap = n / 2; gap > 0; gap = Math.floor(gap / 2)) { // Changed `gap /= 2` to `Math.floor(gap / 2)` for consistency
+        // 각 간격에 대해 삽입 정렬과 유사한 과정 수행
+        for (i = gap; i < n; i++) {
+            temp = list[i]; // 현재 삽입할 요소 저장
+
+            // 현재 요소(list[i])를 gap만큼 떨어진 앞쪽 요소들과 비교하여 삽입할 위치 탐색
+            for (j = i; j >= gap && list[j - gap] > temp; j -= gap) {
+                list[j] = list[j - gap]; // 요소들을 gap만큼 뒤로 이동
+            }
+            list[j] = temp; // temp를 올바른 위치에 삽입
+        }
+    }
+}
+                </code>
+            </pre>
+            <button class="button-primary mt-4" onclick="copyCode('shellSortCode')">코드 복사</button>
+
+            <div class="interactive-section mt-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">셸 정렬 시뮬레이션</h3>
+                <p class="text-gray-700 mb-4">배열을 입력하고 '정렬 시작' 버튼을 눌러 셸 정렬의 동작을 시각적으로 확인해보세요!</p>
+                <input type="text" id="shellInput" placeholder="콤마로 구분된 숫자 입력 (예: 5,3,8,1,2,7)" class="w-full p-2 border border-gray-300 rounded-md shadow-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex space-x-4">
+                    <button class="button-primary" onclick="startShellSortSimulation()">정렬 시작</button>
+                    <button class="button-primary bg-gray-500 hover:bg-gray-600" onclick="resetShellSortSimulation()">초기화</button>
+                </div>
+                <div id="shellVisualization" class="list-visualization mt-4"></div>
+                <div id="shellSteps" class="mt-4 text-gray-700"></div>
+            </div>
+        </section>
+
+        <hr class="border-gray-300 mx-6">
+
+        <!-- 기수 정렬 섹션 -->
+        <section id="radix-sort" class="py-8 px-6">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6">기수 정렬 (Radix Sort) 🔢</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                <strong>개념 설명:</strong> 기수 정렬은 비교 정렬이 아닌 선형 시간 정렬 알고리즘입니다.
+                숫자(또는 문자열)의 자릿수(또는 문자 위치)를 기준으로 낮은 자릿수부터(LSD: Least Significant Digit) 또는 높은 자릿수부터(MSD: Most Significant Digit)
+                안정적인 보조 정렬(주로 계수 정렬/Counting Sort)을 반복하여 전체를 정렬합니다.
+            </p>
+            <div class="algorithm-explanation">
+                <p><strong>동작 방식 예시: 배열 [170, 45, 75, 90, 802, 24, 2]를 오름차순으로 정렬</strong></p>
+                <div class="static-visualization-container">
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item">170</span>
+                            <span class="static-array-item">45</span>
+                            <span class="static-array-item">75</span>
+                            <span class="static-array-item">90</span>
+                            <span class="static-array-item">802</span>
+                            <span class="static-array-item">24</span>
+                            <span class="static-array-item">2</span>
+                        </div>
+                        <span class="static-step-description">초기 상태</span>
+                    </div>
+                    <div class="static-visualization-step">
+                        <span class="static-step-description">1단계: 1의 자리 기준 정렬</span>
+                        <div class="radix-buckets-container">
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 0:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">170</span>
+                                    <span class="radix-bucket-item">90</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 1:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 2:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">802</span>
+                                    <span class="radix-bucket-item">2</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 3:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 4:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">24</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 5:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">45</span>
+                                    <span class="radix-bucket-item">75</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 6:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 7:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 8:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 9:</span><div class="radix-bucket-items"></div></div>
+                        </div>
+                        <span class="arrow-down">↓ (수집)</span>
+                        <div class="static-array">
+                            <span class="static-array-item static-active">170</span>
+                            <span class="static-array-item static-active">90</span>
+                            <span class="static-array-item static-active">802</span>
+                            <span class="static-array-item static-active">2</span>
+                            <span class="static-array-item static-active">24</span>
+                            <span class="static-array-item static-active">45</span>
+                            <span class="static-array-item static-active">75</span>
+                        </div>
+                    </div>
+                    <div class="static-visualization-step">
+                        <span class="static-step-description">2단계: 10의 자리 기준 정렬</span>
+                        <div class="radix-buckets-container">
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 0:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">802</span>
+                                    <span class="radix-bucket-item">2</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 1:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 2:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">24</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 3:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 4:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">45</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 5:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 6:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 7:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">75</span>
+                                    <span class="radix-bucket-item">170</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 8:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 9:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">90</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="arrow-down">↓ (수집)</span>
+                        <div class="static-array">
+                            <span class="static-array-item static-active">802</span>
+                            <span class="static-array-item static-active">2</span>
+                            <span class="static-array-item static-active">24</span>
+                            <span class="static-array-item static-active">45</span>
+                            <span class="static-array-item static-active">75</span>
+                            <span class="static-array-item static-active">170</span>
+                            <span class="static-array-item static-active">90</span>
+                        </div>
+                    </div>
+                    <div class="static-visualization-step">
+                        <span class="static-step-description">3단계: 100의 자리 기준 정렬</span>
+                        <div class="radix-buckets-container">
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 0:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">2</span>
+                                    <span class="radix-bucket-item">24</span>
+                                    <span class="radix-bucket-item">45</span>
+                                    <span class="radix-bucket-item">75</span>
+                                    <span class="radix-bucket-item">90</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 1:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">170</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 2:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 3:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 4:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 5:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 6:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 7:</span><div class="radix-bucket-items"></div></div>
+                            <div class="radix-bucket-row">
+                                <span class="radix-bucket-label">버킷 8:</span>
+                                <div class="radix-bucket-items">
+                                    <span class="radix-bucket-item">802</span>
+                                </div>
+                            </div>
+                            <div class="radix-bucket-row"><span class="radix-bucket-label">버킷 9:</span><div class="radix-bucket-items"></div></div>
+                        </div>
+                        <span class="arrow-down">↓ (수집)</span>
+                        <div class="static-array">
+                            <span class="static-array-item static-active">2</span>
+                            <span class="static-array-item static-active">24</span>
+                            <span class="static-array-item static-active">45</span>
+                            <span class="static-array-item static-active">75</span>
+                            <span class="static-array-item static-active">90</span>
+                            <span class="static-array-item static-active">170</span>
+                            <span class="static-array-item static-active">802</span>
+                        </div>
+                    </div>
+                    <div class="static-visualization-step">
+                        <div class="static-array">
+                            <span class="static-array-item static-sorted">2</span>
+                            <span class="static-array-item static-sorted">24</span>
+                            <span class="static-array-item static-sorted">45</span>
+                            <span class="static-array-item static-sorted">75</span>
+                            <span class="static-array-item static-sorted">90</span>
+                            <span class="static-array-item static-sorted">170</span>
+                            <span class="static-array-item static-sorted">802</span>
+                        </div>
+                        <span class="static-step-description">최종 정렬 완료</span>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-disc list-inside ml-4 text-gray-700 space-y-2 mb-4">
+                <li><strong>시간 복잡도:</strong> O(d · (N+K))
+                    <ul>
+                        <li>N: 요소의 개수</li>
+                        <li>d: 최대 자릿수 (숫자 길이)</li>
+                        <li>K: 기수 (예: 10진수면 10)</li>
+                        <li>숫자 길이(d)가 상수이거나 log_K N에 비례하는 경우, 선형 시간 복잡도(O(N))를 가집니다.</li>
+                    </ul>
+                </li>
+                <li><strong>장점:</strong>
+                    <ul>
+                        <li>특정 조건(숫자의 범위, 자릿수)에서 비교 정렬보다 훨씬 빠릅니다 (선형 시간).</li>
+                        <li>안정 정렬입니다.</li>
+                    </ul>
+                </li>
+                <li><strong>단점:</strong>
+                    <ul>
+                        <li>정수 또는 고정 길이의 문자열 등 데이터 종류에 제약이 있습니다.</li>
+                        <li>기수(K)와 자릿수(d)에 따라 성능이 달라집니다.</li>
+                        <li>추가 메모리 공간이 필요합니다.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3 class="text-2xl font-bold text-gray-800 mt-6 mb-4">C 실제 코드 예시</h3>
+            <pre class="code-block">
+                <code id="radixSortCode">
+#include <stdlib.h> // malloc, free 사용
+
+// 배열에서 가장 큰 값(최대 자릿수를 결정하기 위함)을 찾는 헬퍼 함수
+int get_max(int arr[], int n) {
+    int max = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] > max) {
+            max = arr[i];
+        }
+    }
+    return max;
+}
+
+// 특정 자릿수(exp)에 대해 계수 정렬(Counting Sort)을 수행하는 함수
+// 기수 정렬의 내부에서 안정적인 정렬을 제공
+void counting_sort_by_digit(int arr[], int n, int exp) {
+    int *output = (int *)malloc(n * sizeof(int)); // 정렬된 결과를 저장할 임시 배열
+    int count[10] = {0}; // 0-9까지의 각 자릿수 빈도를 저장할 배열 (기수가 10진수이므로 10개)
+
+    // 1. 현재 자릿수(exp)의 빈도를 계산
+    for (int i = 0; i < n; i++) {
+        count[(arr[i] / exp) % 10]++;
+    }
+
+    // 2. count 배열을 누적 빈도로 변환 (output 배열의 인덱스를 결정하기 위함)
+    for (int i = 1; i < 10; i++) {
+        count[i] += count[i - 1];
+    }
+
+    // 3. output 배열에 요소들을 배치 (원본 배열의 뒤에서부터 처리하여 안정성 유지)
+    for (int i = n - 1; i >= 0; i--) {
+        output[count[(arr[i] / exp) % 10] - 1] = arr[i];
+        count[(arr[i] / exp) % 10]--;
+    }
+
+    // 4. output 배열의 내용을 원래 배열로 복사
+    for (int i = 0; i < n; i++) {
+        arr[i] = output[i];
+    }
+
+    free(output); // 임시 배열 메모리 해제
+}
+
+// 기수 정렬의 주 함수
+void radix_sort(int arr[], int n) {
+    // 배열에서 가장 큰 값을 찾아 최대 자릿수를 결정
+    int m = get_max(arr, n);
+
+    // 가장 낮은 자릿수(1의 자리)부터 시작하여 각 자릿수에 대해 정렬 반복
+    // exp는 현재 처리할 자릿수를 나타내는 10의 거듭제곱 (1, 10, 100, ...)
+    for (int exp = 1; m / exp > 0; exp *= 10) {
+        counting_sort_by_digit(arr, n, exp);
+    }
+}
+                </code>
+            </pre>
+            <button class="button-primary mt-4" onclick="copyCode('radixSortCode')">코드 복사</button>
+
+            <div class="interactive-section mt-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">기수 정렬 시뮬레이션</h3>
+                <p class="text-gray-700 mb-4">배열을 입력하고 '정렬 시작' 버튼을 눌러 기수 정렬의 동작을 시각적으로 확인해보세요!</p>
+                <input type="text" id="radixInput" placeholder="콤마로 구분된 숫자 입력 (예: 170,45,75,90,802)" class="w-full p-2 border border-gray-300 rounded-md shadow-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex space-x-4">
+                    <button class="button-primary" onclick="startRadixSortSimulation()">정렬 시작</button>
+                    <button class="button-primary bg-gray-500 hover:bg-gray-600" onclick="resetRadixSortSimulation()">초기화</button>
+                </div>
+                <!-- Radix visualization will be rendered here -->
+                <div id="radixVisualization" class="radix-sim-container mt-4"></div>
+                <div id="radixSteps" class="mt-4 text-gray-700"></div>
+            </div>
+        </section>
+
+        <hr class="border-gray-300 mx-6">
+
+        <!-- 요약 및 결론 -->
+        <section class="py-8 px-6 text-center">
+            <h2 class="text-3xl font-bold section-title text-gray-800 mb-6 mx-auto w-fit">정렬 알고리즘 비교 및 정리 💡</h2>
+            <div class="overflow-x-auto mb-8 rounded-lg shadow-md">
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead>
+                        <tr class="bg-blue-100 text-blue-800 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left border-b border-gray-200">알고리즘</th>
+                            <th class="py-3 px-6 text-left border-b border-gray-200">시간 복잡도 (평균)</th>
+                            <th class="py-3 px-6 text-left border-b border-gray-200">안정성</th>
+                            <th class="py-3 px-6 text-left border-b border-gray-200">특징</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700 text-sm font-light">
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">선택 정렬</td>
+                            <td class="py-3 px-6 text-left">O(N^2)</td>
+                            <td class="py-3 px-6 text-left">불안정</td>
+                            <td class="py-3 px-6 text-left">항상 최소값 탐색, 교환 횟수 적음</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">삽입 정렬</td>
+                            <td class="py-3 px-6 text-left">O(N^2)</td>
+                            <td class="py-3 px-6 text-left">안정</td>
+                            <td class="py-3 px-6 text-left">거의 정렬된 경우 O(N), 작은 데이터에 유리</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">버블 정렬</td>
+                            <td class="py-3 px-6 text-left">O(N^2)</td>
+                            <td class="py-3 px-6 text-left">안정</td>
+                            <td class="py-3 px-6 text-left">가장 비효율적, 교육용으로 주로 사용</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">퀵 정렬</td>
+                            <td class="py-3 px-6 text-left">O(N log N)</td>
+                            <td class="py-3 px-6 text-left">불안정</td>
+                            <td class="py-3 px-6 text-left">평균적으로 가장 빠름, 분할 정복</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">병합 정렬</td>
+                            <td class="py-3 px-6 text-left">O(N log N)</td>
+                            <td class="py-3 px-6 text-left">안정</td>
+                            <td class="py-3 px-6 text-left">항상 O(N log N) 보장, 추가 공간 필요</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">셸 정렬</td>
+                            <td class="py-3 px-6 text-left">O(N^(1.25)) ~ O(N log^2 N)</td>
+                            <td class="py-3 px-6 text-left">불안정</td>
+                            <td class="py-3 px-6 text-left">삽입 정렬 개선, 간격 수열에 영향</td>
+                        </tr>
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">기수 정렬</td>
+                            <td class="py-3 px-6 text-left">O(d · (N+K))</td>
+                            <td class="py-3 px-6 text-left">안정</td>
+                            <td class="py-3 px-6 text-left">비교 정렬X, 선형 시간, 특정 데이터에 유리</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-lg text-gray-700 leading-relaxed max-w-2xl mx-auto">
+                이 페이지를 통해 주요 정렬 알고리즘의 원리와 특징을 이해하셨기를 바랍니다.
+                각 알고리즘의 장단점을 파악하고 데이터의 특성에 맞는 적절한 정렬 알고리즘을 선택하는 능력을 키우는 것이 중요합니다.
+                더 궁금한 점이 있다면 언제든지 질문해주세요!
+            </p>
+        </section>
+
+        <footer class="text-center py-6 border-t-2 border-gray-200 mt-8">
+            <p class="text-gray-600 text-sm">&copy; 2025 자료구조 교육 전문가. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- 커스텀 모달 HTML -->
+    <div id="customModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <p id="modalMessage" class="text-lg font-semibold text-gray-800"></p>
+        </div>
+    </div>
+
+    <script>
+        // 코드 복사 기능
+        function copyCode(elementId) {
+            const codeElement = document.getElementById(elementId);
+            const textToCopy = codeElement.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showModal("코드가 클립보드에 복사되었습니다!");
+            }).catch(err => {
+                console.error('클립보드 복사 실패:', err);
+                showModal("코드 복사에 실패했습니다.");
+            });
+        }
+
+        // 커스텀 모달 표시 함수
+        function showModal(message) {
+            const modal = document.getElementById('customModal');
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.textContent = message;
+            modal.style.display = 'flex'; // Flexbox로 중앙 정렬
+            setTimeout(() => {
+                modal.style.opacity = 1;
+            }, 10);
+        }
+
+        // 커스텀 모달 닫기 함수
+        function closeModal() {
+            const modal = document.getElementById('customModal');
+            modal.style.opacity = 0;
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300); // Transition duration
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('customModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // =======================================================
+        // 공통 시뮬레이션 함수 (막대 그래프 시각화)
+        // =======================================================
+        const simulationSpeed = 800; // 시뮬레이션 속도 (밀리초)
+
+        function parseInput(inputElementId) {
+            const input = document.getElementById(inputElementId).value;
+            return input.split(',').map(num => parseInt(num.trim(), 10)).filter(num => !isNaN(num) && num >= 0 && num <= 999); // 0-999 범위 제한
+        }
+
+        function renderVisualization(arr, containerId, maxVal, activeIndices = [], pivotIndex = -1, sortedIndices = [], comparingIndices = [], swappingIndices = []) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; // 기존 시각화 초기화
+            const maxBarHeight = 150; // 최대 막대 높이 (px)
+
+            arr.forEach((num, index) => {
+                const item = document.createElement('div');
+                item.classList.add('list-item');
+                // 막대 높이 계산 (최대값에 비례)
+                item.style.height = `${(num / maxVal) * maxBarHeight + 10}px`; // 최소 높이 10px 보장
+
+                const span = document.createElement('span');
+                span.textContent = num;
+                item.appendChild(span);
+
+                if (activeIndices.includes(index)) {
+                    item.classList.add('active');
+                }
+                if (comparingIndices.includes(index)) {
+                    item.classList.add('comparing');
+                }
+                if (swappingIndices.includes(index)) {
+                    item.classList.add('swapping');
+                }
+                if (index === pivotIndex) {
+                    item.classList.add('pivot');
+                }
+                // sortedIndices는 항상 마지막에 적용되어 다른 색상보다 우선하도록 함
+                if (sortedIndices.includes(index)) {
+                    item.classList.add('sorted');
+                }
+                container.appendChild(item);
+            });
+        }
+
+        function logStep(message, stepContainerId) {
+            const stepContainer = document.getElementById(stepContainerId);
+            const p = document.createElement('p');
+            p.textContent = `• ${message}`;
+            stepContainer.appendChild(p);
+            stepContainer.scrollTop = stepContainer.scrollHeight; // 스크롤 하단으로
+        }
+
+        // =======================================================
+        // 선택 정렬 시뮬레이션
+        // =======================================================
+        let selectionArr = [];
+        let selectionSteps = [];
+        let selectionCurrentStep = 0;
+        let selectionInterval = null;
+
+        async function startSelectionSortSimulation() {
+            if (selectionInterval) clearInterval(selectionInterval);
+            selectionArr = parseInput('selectionInput');
+            if (selectionArr.length === 0) { showModal("유효한 숫자를 입력해주세요 (예: 5,3,8,1,2,7)."); return; }
+            if (selectionArr.some(isNaN)) { showModal("숫자만 입력해주세요."); return; }
+
+            selectionSteps = [];
+            selectionCurrentStep = 0;
+            document.getElementById('selectionSteps').innerHTML = '';
+
+            let tempArr = [...selectionArr];
+            let maxVal = tempArr.length > 0 ? Math.max(...tempArr) : 1;
+            if (maxVal === 0) maxVal = 1; // 모든 요소가 0인 경우 시각화 오류 방지
+
+            selectionSteps.push({ arr: [...tempArr], message: `초기 상태: [${tempArr.join(', ')}]`, sortedIndices: [] });
+
+            for (let i = 0; i < tempArr.length - 1; i++) {
+                let min_idx = i;
+                selectionSteps.push({ arr: [...tempArr], comparingIndices: [i], message: `${i+1}번째 위치(${tempArr[i]})에 들어갈 최소값 탐색 시작.`, sortedIndices: Array.from({length: i}, (_, k) => k) });
+
+                for (let j = i + 1; j < tempArr.length; j++) {
+                    selectionSteps.push({ arr: [...tempArr], comparingIndices: [min_idx, j], message: `${tempArr[min_idx]} (현재 최소)와 ${tempArr[j]} 비교 중` });
+                    if (tempArr[j] < tempArr[min_idx]) {
+                        min_idx = j;
+                        selectionSteps.push({ arr: [...tempArr], activeIndices: [min_idx], message: `${tempArr[min_idx]}이(가) 새로운 최소값으로 발견됨` });
+                    }
+                }
+                if (min_idx !== i) {
+                    selectionSteps.push({ arr: [...tempArr], swappingIndices: [i, min_idx], message: `${tempArr[i]}와 ${tempArr[min_idx]} 교환 준비` });
+                    let temp = tempArr[i];
+                    tempArr[i] = tempArr[min_idx];
+                    tempArr[min_idx] = temp;
+                    selectionSteps.push({ arr: [...tempArr], activeIndices: [i], sortedIndices: Array.from({length: i + 1}, (_, k) => k), message: `교환 완료. ${tempArr[i]}을(를) ${i+1}번째 위치로 이동. 정렬된 부분: [${tempArr.slice(0, i + 1).join(', ')}]` });
+                } else {
+                    selectionSteps.push({ arr: [...tempArr], activeIndices: [i], sortedIndices: Array.from({length: i + 1}, (_, k) => k), message: `${tempArr[i]}은(는) 이미 올바른 위치에 있습니다. 정렬된 부분: [${tempArr.slice(0, i + 1).join(', ')}]` });
+                }
+            }
+            selectionSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: tempArr.length}, (_, k) => k), message: `정렬 완료: [${tempArr.join(', ')}]` });
+
+            selectionInterval = setInterval(() => nextSimulationStep(selectionSteps, 'selectionVisualization', maxVal, 'selectionSteps', selectionCurrentStep++, () => clearInterval(selectionInterval), renderVisualization), simulationSpeed);
+        }
+
+        function resetSelectionSortSimulation() {
+            clearInterval(selectionInterval);
+            selectionArr = [];
+            selectionSteps = [];
+            selectionCurrentStep = 0;
+            document.getElementById('selectionVisualization').innerHTML = '';
+            document.getElementById('selectionSteps').innerHTML = '';
+            document.getElementById('selectionInput').value = '';
+        }
+
+        // =======================================================
+        // 삽입 정렬 시뮬레이션
+        // =======================================================
+        let insertionArr = [];
+        let insertionSteps = [];
+        let insertionCurrentStep = 0;
+        let insertionInterval = null;
+
+        async function startInsertionSortSimulation() {
+            if (insertionInterval) clearInterval(insertionInterval);
+            insertionArr = parseInput('insertionInput');
+            if (insertionArr.length === 0) { showModal("유효한 숫자를 입력해주세요 (예: 5,3,8,1,2,7)."); return; }
+            if (insertionArr.some(isNaN)) { showModal("숫자만 입력해주세요."); return; }
+
+            insertionSteps = [];
+            insertionCurrentStep = 0;
+            document.getElementById('insertionSteps').innerHTML = '';
+
+            let tempArr = [...insertionArr];
+            let maxVal = tempArr.length > 0 ? Math.max(...tempArr) : 1;
+            if (maxVal === 0) maxVal = 1;
+
+            insertionSteps.push({ arr: [...tempArr], message: `초기 상태: [${tempArr.join(', ')}]`, sortedIndices: [] });
+
+            for (let i = 1; i < tempArr.length; i++) {
+                let key = tempArr[i];
+                let j = i - 1;
+
+                insertionSteps.push({ arr: [...tempArr], activeIndices: [i], comparingIndices: [], message: `${i+1}번째 요소 ${key}을(를) 삽입할 위치 탐색 시작.`, sortedIndices: Array.from({length: i}, (_, k) => k) });
+
+                while (j >= 0 && tempArr[j] > key) {
+                    insertionSteps.push({ arr: [...tempArr], comparingIndices: [j, i], message: `${tempArr[j]} (현재 정렬된 요소)와 삽입할 ${key} 비교 중` });
+                    tempArr[j + 1] = tempArr[j];
+                    insertionSteps.push({ arr: [...tempArr], activeIndices: [j + 1], message: `${tempArr[j+1]}을(를) 오른쪽으로 이동` });
+                    j--;
+                }
+                tempArr[j + 1] = key;
+                insertionSteps.push({ arr: [...tempArr], activeIndices: [j + 1], sortedIndices: Array.from({length: i + 1}, (_, k) => k), message: `${key}을(를) 올바른 위치에 삽입. 현재 정렬된 부분: [${tempArr.slice(0, i + 1).join(', ')}]` });
+            }
+            insertionSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: tempArr.length}, (_, k) => k), message: `정렬 완료: [${tempArr.join(', ')}]` });
+
+            insertionInterval = setInterval(() => nextSimulationStep(insertionSteps, 'insertionVisualization', maxVal, 'insertionSteps', insertionCurrentStep++, () => clearInterval(insertionInterval), renderVisualization), simulationSpeed);
+        }
+
+        function resetInsertionSortSimulation() {
+            clearInterval(insertionInterval);
+            insertionArr = [];
+            insertionSteps = [];
+            insertionCurrentStep = 0;
+            document.getElementById('insertionVisualization').innerHTML = '';
+            document.getElementById('insertionSteps').innerHTML = '';
+            document.getElementById('insertionInput').value = '';
+        }
+
+        // =======================================================
+        // 버블 정렬 시뮬레이션
+        // =======================================================
+        let bubbleArr = [];
+        let bubbleSteps = [];
+        let bubbleCurrentStep = 0;
+        let bubbleInterval = null;
+
+        async function startBubbleSortSimulation() {
+            if (bubbleInterval) clearInterval(bubbleInterval);
+            bubbleArr = parseInput('bubbleInput');
+            if (bubbleArr.length === 0) { showModal("유효한 숫자를 입력해주세요 (예: 5,3,8,1,2,7)."); return; }
+            if (bubbleArr.some(isNaN)) { showModal("숫자만 입력해주세요."); return; }
+
+            bubbleSteps = [];
+            bubbleCurrentStep = 0;
+            document.getElementById('bubbleSteps').innerHTML = '';
+
+            let tempArr = [...bubbleArr];
+            let maxVal = tempArr.length > 0 ? Math.max(...tempArr) : 1;
+            if (maxVal === 0) maxVal = 1;
+
+            bubbleSteps.push({ arr: [...tempArr], message: `초기 상태: [${tempArr.join(', ')}]`, sortedIndices: [] });
+
+            let n = tempArr.length;
+            let swapped;
+            for (let i = 0; i < n - 1; i++) {
+                swapped = false;
+                bubbleSteps.push({ arr: [...tempArr], message: `${i+1}번째 패스 시작. 정렬되지 않은 범위: [${tempArr.slice(0, n - i).join(', ')}]` });
+                for (let j = 0; j < n - 1 - i; j++) {
+                    bubbleSteps.push({ arr: [...tempArr], comparingIndices: [j, j + 1], message: `${tempArr[j]}와 ${tempArr[j+1]} 비교 중` });
+                    if (tempArr[j] > tempArr[j + 1]) {
+                        bubbleSteps.push({ arr: [...tempArr], swappingIndices: [j, j + 1], message: `${tempArr[j]}와 ${tempArr[j+1]} 교환 준비` });
+                        let temp = tempArr[j];
+                        tempArr[j] = tempArr[j + 1];
+                        tempArr[j + 1] = temp;
+                        swapped = true;
+                        bubbleSteps.push({ arr: [...tempArr], activeIndices: [], message: `교환 완료. 현재 상태: [${tempArr.join(', ')}]` });
+                    }
+                }
+                if (!swapped) {
+                    // 이미 정렬된 나머지 부분도 sorted로 표시
+                    bubbleSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: tempArr.length}, (_, k) => k), message: `더 이상 교환이 없어 정렬 완료: [${tempArr.join(', ')}]` });
+                    break;
+                }
+                // 이번 패스에서 가장 큰 값이 제 위치를 찾았으므로 sorted로 표시
+                bubbleSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: i + 1}, (_, k) => n - 1 - k).reverse().concat(Array.from({length: (bubbleSteps[bubbleSteps.length-1].sortedIndices || []).length}, (_, k) => k + (n-i))), message: `${i+1}번째 패스 완료. ${tempArr[n - 1 - i]}이(가) 제 위치를 찾음.` });
+            }
+            // 최종 정렬 완료 상태를 보장하기 위해 마지막 스텝 추가 (모든 요소 sorted)
+            bubbleSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: tempArr.length}, (_, k) => k), message: `정렬 완료: [${tempArr.join(', ')}]` });
+
+
+            bubbleInterval = setInterval(() => nextSimulationStep(bubbleSteps, 'bubbleVisualization', maxVal, 'bubbleSteps', bubbleCurrentStep++, () => clearInterval(bubbleInterval), renderVisualization), simulationSpeed);
+        }
+
+        function resetBubbleSortSimulation() {
+            clearInterval(bubbleInterval);
+            bubbleArr = [];
+            bubbleSteps = [];
+            bubbleCurrentStep = 0;
+            document.getElementById('bubbleVisualization').innerHTML = '';
+            document.getElementById('bubbleSteps').innerHTML = '';
+            document.getElementById('bubbleInput').value = '';
+        }
+
+        // =======================================================
+        // 퀵 정렬 시뮬레이션
+        // =======================================================
+        let quickArr = [];
+        let quickSteps = [];
+        let quickCurrentStep = 0;
+        let quickInterval = null;
+
+        async function startQuickSortSimulation() {
+            if (quickInterval) clearInterval(quickInterval);
+            quickArr = parseInput('quickInput');
+            if (quickArr.length === 0) { showModal("유효한 숫자를 입력해주세요 (예: 5,3,8,1,2,7)."); return; }
+            if (quickArr.some(isNaN)) { showModal("숫자만 입력해주세요."); return; }
+
+            quickSteps = [];
+            quickCurrentStep = 0;
+            document.getElementById('quickSteps').innerHTML = '';
+
+            let tempArr = [...quickArr];
+            let maxVal = tempArr.length > 0 ? Math.max(...tempArr) : 1;
+            if (maxVal === 0) maxVal = 1;
+
+            quickSteps.push({ arr: [...tempArr], message: `초기 상태: [${tempArr.join(', ')}]` });
+            await quickSortSimulate(tempArr, 0, tempArr.length - 1);
+            quickSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: tempArr.length}, (_, k) => k), message: `정렬 완료: [${tempArr.join(', ')}]` });
+
+            quickInterval = setInterval(() => nextSimulationStep(quickSteps, 'quickVisualization', maxVal, 'quickSteps', quickCurrentStep++, () => clearInterval(quickInterval), renderVisualization), simulationSpeed);
+        }
+
+        async function quickSortSimulate(arr, low, high) {
+            if (low < high) {
+                let pi = await partitionSimulate(arr, low, high);
+                // 피벗이 최종 위치에 있으므로 sortedIndices에 추가
+                quickSteps.push({ arr: [...arr], sortedIndices: Array.from({length: arr.length}, (_,k) => k).filter(idx => idx === pi || (quickSteps[quickSteps.length-1].sortedIndices || []).includes(idx) ), message: `피벗 ${arr[pi]}의 최종 위치 확정.` });
+
+                await quickSortSimulate(arr, low, pi - 1);
+                await quickSortSimulate(arr, pi + 1, high);
+            } else if (low === high) { // 요소가 하나만 남은 경우, 그 자체로 정렬됨
+                 quickSteps.push({ arr: [...arr], sortedIndices: Array.from({length: arr.length}, (_,k) => k).filter(idx => idx === low || (quickSteps[quickSteps.length-1].sortedIndices || []).includes(idx) ), message: `단일 요소 ${arr[low]} 정렬 완료.` });
+            }
+        }
+
+        async function partitionSimulate(arr, low, high) {
+            let pivot = arr[low]; // 첫 번째 요소를 피벗으로 사용
+            let i = low + 1;
+
+            quickSteps.push({ arr: [...arr], pivotIndex: low, message: `분할 시작. 현재 범위: ${low} ~ ${high}. 피벗: ${pivot} (첫 번째 요소)` });
+
+            for (let j = low + 1; j <= high; j++) {
+                quickSteps.push({ arr: [...arr], comparingIndices: [j], message: `${arr[j]}와 피벗(${pivot}) 비교 중` });
+                if (arr[j] < pivot) {
+                    if (i !== j) { // 같은 위치에 있지 않을 때만 교환
+                        quickSteps.push({ arr: [...arr], swappingIndices: [i, j], message: `${arr[j]}와 ${arr[i]} 교환 준비` });
+                        let temp = arr[i];
+                        arr[i] = arr[j];
+                        arr[j] = temp;
+                        quickSteps.push({ arr: [...arr], message: `교환 완료. 현재 상태: [${arr.join(', ')}]` });
+                    }
+                    i++;
+                }
+            }
+
+            // 피벗을 최종 위치에 배치
+            quickSteps.push({ arr: [...arr], swappingIndices: [low, i - 1], message: `피벗(${pivot})과 ${arr[i-1]} 교환 준비` });
+            let temp = arr[low];
+            arr[low] = arr[i - 1];
+            arr[i - 1] = temp;
+            quickSteps.push({ arr: [...arr], pivotIndex: i - 1, message: `피벗 ${pivot}을(를) 최종 위치 ${i-1}에 배치. 정렬된 피벗. 현재 상태: [${arr.join(', ')}]` });
+
+            return i - 1;
+        }
+
+        function resetQuickSortSimulation() {
+            clearInterval(quickInterval);
+            quickArr = [];
+            quickSteps = [];
+            quickCurrentStep = 0;
+            document.getElementById('quickVisualization').innerHTML = '';
+            document.getElementById('quickSteps').innerHTML = '';
+            document.getElementById('quickInput').value = '';
+        }
+
+        // =======================================================
+        // 병합 정렬 시뮬레이션
+        // =======================================================
+        let mergeArr = [];
+        let mergeSteps = [];
+        let mergeCurrentStep = 0;
+        let mergeInterval = null;
+
+        async function startMergeSortSimulation() {
+            if (mergeInterval) clearInterval(mergeInterval);
+            mergeArr = parseInput('mergeInput');
+            if (mergeArr.length === 0) { showModal("유효한 숫자를 입력해주세요 (예: 5,3,8,1,2,7)."); return; }
+            if (mergeArr.some(isNaN)) { showModal("숫자만 입력해주세요."); return; }
+
+            mergeSteps = [];
+            mergeCurrentStep = 0;
+            document.getElementById('mergeSteps').innerHTML = '';
+
+            let tempArr = [...mergeArr];
+            let maxVal = tempArr.length > 0 ? Math.max(...tempArr) : 1;
+            if (maxVal === 0) maxVal = 1;
+
+            mergeSteps.push({ arr: [...tempArr], message: `초기 상태: [${tempArr.join(', ')}]`, sortedIndices: [], activeIndices: Array.from({length: tempArr.length}, (_, i) => i) });
+            await mergeSortSimulate(tempArr, 0, tempArr.length - 1);
+            mergeSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: tempArr.length}, (_, k) => k), message: `정렬 완료: [${tempArr.join(', ')}]` });
+
+            mergeInterval = setInterval(() => nextSimulationStep(mergeSteps, 'mergeVisualization', maxVal, 'mergeSteps', mergeCurrentStep++, () => clearInterval(mergeInterval), renderVisualization), simulationSpeed);
+        }
+
+        async function mergeSortSimulate(arr, start, end) {
+            if (start < end) {
+                const mid = Math.floor((start + end) / 2);
+                const leftPart = arr.slice(start, mid + 1);
+                const rightPart = arr.slice(mid + 1, end + 1);
+
+                mergeSteps.push({ arr: [...arr], activeIndices: Array.from({length: end - start + 1}, (_, k) => start + k), message: `[분할] 배열 [${arr.slice(start, end + 1).join(', ')}]을(를) 두 부분으로 나눕니다: [${leftPart.join(', ')}]와 [${rightPart.join(', ')}]` });
+
+                await mergeSortSimulate(arr, start, mid);
+                await mergeSortSimulate(arr, mid + 1, end);
+
+                await mergeSimulate(arr, start, mid, end);
+            } else if (start === end) {
+                mergeSteps.push({ arr: [...arr], sortedIndices: (mergeSteps[mergeSteps.length-1].sortedIndices || []).concat([start]), message: `[정복] 단일 요소 [${arr[start]}]은(는) 이미 정렬되어 있습니다.` });
+            }
+        }
+
+        async function mergeSimulate(arr, start, mid, end) {
+            let temp = [];
+            let i = start;
+            let j = mid + 1;
+            let originalLeft = arr.slice(start, mid + 1);
+            let originalRight = arr.slice(mid + 1, end + 1);
+
+            mergeSteps.push({ arr: [...arr], activeIndices: Array.from({length: end - start + 1}, (_, k) => start + k), message: `[병합] 왼쪽 부분 배열 [${originalLeft.join(', ')}]과 오른쪽 부분 배열 [${originalRight.join(', ')}]을(를) 병합합니다.` });
+
+            while (i <= mid && j <= end) {
+                mergeSteps.push({ arr: [...arr], comparingIndices: [i, j], message: `비교 중: ${arr[i]} vs ${arr[j]}.` });
+                if (arr[i] <= arr[j]) {
+                    temp.push(arr[i++]);
+                } else {
+                    temp.push(arr[j++]);
+                }
+                mergeSteps.push({ arr: [...arr], activeIndices: Array.from({length: end - start + 1}, (_, k) => start + k), message: `현재 병합 결과: [${temp.join(', ')}]` });
+            }
+
+            while (i <= mid) {
+                temp.push(arr[i++]);
+                mergeSteps.push({ arr: [...arr], activeIndices: Array.from({length: end - start + 1}, (_, k) => start + k), message: `남은 왼쪽 요소 병합: [${temp.join(', ')}]` });
+            }
+            while (j <= end) {
+                temp.push(arr[j++]);
+                mergeSteps.push({ arr: [...arr], activeIndices: Array.from({length: end - start + 1}, (_, k) => start + k), message: `남은 오른쪽 요소 병합: [${temp.join(', ')}]` });
+            }
+
+            // Copy back to original array, and add sorted status
+            let sortedIndicesInThisMerge = [];
+            for (let k = 0; k < temp.length; k++) {
+                arr[start + k] = temp[k];
+                sortedIndicesInThisMerge.push(start + k);
+            }
+            mergeSteps.push({ arr: [...arr], sortedIndices: sortedIndicesInThisMerge.concat(mergeSteps[mergeSteps.length-1].sortedIndices || []), message: `[병합 완료] 부분 배열 [${arr.slice(start, end + 1).join(', ')}] 정렬 완료. 전체: [${arr.join(', ')}]` });
+        }
+
+        function resetMergeSortSimulation() {
+            clearInterval(mergeInterval);
+            mergeArr = [];
+            mergeSteps = [];
+            mergeCurrentStep = 0;
+            document.getElementById('mergeVisualization').innerHTML = '';
+            document.getElementById('mergeSteps').innerHTML = '';
+            document.getElementById('mergeInput').value = '';
+        }
+
+        // =======================================================
+        // 셸 정렬 시뮬레이션
+        // =======================================================
+        let shellArr = [];
+        let shellSteps = [];
+        let shellCurrentStep = 0;
+        let shellInterval = null;
+
+        async function startShellSortSimulation() {
+            if (shellInterval) clearInterval(shellInterval);
+            shellArr = parseInput('shellInput');
+            if (shellArr.length === 0) { showModal("유효한 숫자를 입력해주세요 (예: 5,3,8,1,2,7)."); return; }
+            if (shellArr.some(isNaN)) { showModal("숫자만 입력해주세요."); return; }
+
+            shellSteps = [];
+            shellCurrentStep = 0;
+            document.getElementById('shellSteps').innerHTML = '';
+
+            let tempArr = [...shellArr];
+            let maxVal = tempArr.length > 0 ? Math.max(...tempArr) : 1;
+            if (maxVal === 0) maxVal = 1;
+
+            shellSteps.push({ arr: [...tempArr], message: `초기 상태: [${tempArr.join(', ')}]` });
+
+            let n = tempArr.length;
+            for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
+                shellSteps.push({ arr: [...tempArr], message: `[새로운 간격] 간격(gap): ${gap}. 간격 ${gap}에 대한 부분 삽입 정렬 시작.`, activeIndices: [], comparingIndices: [], swappingIndices: [] });
+
+                for (let i = gap; i < n; i++) {
+                    let currentKey = tempArr[i];
+                    let j = i;
+                    
+                    // Highlight the elements involved in this gap-sorted sub-array
+                    let activeGroupIndices = [];
+                    for (let k = j % gap; k < n; k += gap) {
+                        activeGroupIndices.push(k);
+                    }
+                    shellSteps.push({ arr: [...tempArr], activeIndices: activeGroupIndices, message: `요소 ${currentKey} (인덱스 ${i})을(를) ${gap} 간격으로 삽입할 위치 탐색` });
+
+                    while (j >= gap && tempArr[j - gap] > currentKey) {
+                        shellSteps.push({ arr: [...tempArr], comparingIndices: [j, j - gap], activeIndices: activeGroupIndices, message: `${tempArr[j - gap]}와 ${currentKey} 비교 중. ${tempArr[j - gap]} 이동.` });
+                        tempArr[j] = tempArr[j - gap];
+                        shellSteps.push({ arr: [...tempArr], activeIndices: activeGroupIndices, message: `이동 완료. 현재 상태: [${tempArr.join(', ')}]` });
+                        j -= gap;
+                    }
+                    if (j !== i) { // 실제로 삽입이 일어났다면
+                        tempArr[j] = currentKey;
+                        shellSteps.push({ arr: [...tempArr], activeIndices: activeGroupIndices.concat([j]), message: `${currentKey}을(를) 올바른 위치(${j})에 삽입. 현재 상태: [${tempArr.join(', ')}]` });
+                    } else {
+                        shellSteps.push({ arr: [...tempArr], activeIndices: activeGroupIndices.concat([j]), message: `${currentKey}은(는) 이미 올바른 위치(${j})에 있습니다.` });
+                    }
+                }
+                shellSteps.push({ arr: [...tempArr], message: `간격 ${gap}에 대한 정렬 완료. 현재 상태: [${tempArr.join(', ')}]` });
+            }
+            shellSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: tempArr.length}, (_, k) => k), message: `정렬 완료: [${tempArr.join(', ')}]` });
+
+            shellInterval = setInterval(() => nextSimulationStep(shellSteps, 'shellVisualization', maxVal, 'shellSteps', shellCurrentStep++, () => clearInterval(shellInterval), renderVisualization), simulationSpeed);
+        }
+
+        function resetShellSortSimulation() {
+            clearInterval(shellInterval);
+            shellArr = [];
+            shellSteps = [];
+            shellCurrentStep = 0;
+            document.getElementById('shellVisualization').innerHTML = '';
+            document.getElementById('shellSteps').innerHTML = '';
+            document.getElementById('shellInput').value = '';
+        }
+
+        // =======================================================
+        // 기수 정렬 시뮬레이션
+        // =======================================================
+        let radixArr = [];
+        let radixSteps = [];
+        let radixCurrentStep = 0;
+        let radixInterval = null;
+
+        // Helper function to get the maximum value in an array (for Radix Sort)
+        function get_maxSimulate(arr) {
+            let max = 0;
+            if (arr.length > 0) {
+                max = arr[0];
+                for (let i = 1; i < arr.length; i++) {
+                    if (arr[i] > max) {
+                        max = arr[i];
+                    }
+                }
+            }
+            return max;
+        }
+
+        // 새로운 렌더링 함수: Radix Sort 전용 (배열과 버킷 동시 시각화)
+        function renderRadixVisualization(arr, containerId, maxVal, activeIndices = [], pivotIndex = -1, sortedIndices = [], comparingIndices = [], swappingIndices = [], buckets = new Array(10).fill().map(() => [])) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; // Clear existing visualization
+
+            // Render main array (just numbers)
+            const mainArrayDiv = document.createElement('div');
+            mainArrayDiv.classList.add('radix-sim-array');
+            if (arr.length > 0) {
+                arr.forEach((num, index) => {
+                    const item = document.createElement('div');
+                    item.classList.add('radix-sim-array-item'); // Use new class for array items
+                    item.textContent = num;
+                    if (activeIndices.includes(index)) {
+                        item.classList.add('active');
+                    }
+                    if (sortedIndices.includes(index)) {
+                        item.classList.add('sorted');
+                    }
+                    mainArrayDiv.appendChild(item);
+                });
+            } else {
+                 mainArrayDiv.textContent = '배열 비어있음'; // Show placeholder if array is empty
+                 mainArrayDiv.style.justifyContent = 'flex-start'; // Align text left if empty
+            }
+            container.appendChild(mainArrayDiv);
+
+            // Render buckets
+            const bucketsDiv = document.createElement('div');
+            bucketsDiv.classList.add('radix-sim-buckets');
+            for (let i = 0; i < 10; i++) {
+                const bucketRow = document.createElement('div');
+                bucketRow.classList.add('radix-sim-bucket-row');
+
+                const label = document.createElement('span');
+                label.classList.add('radix-sim-bucket-label');
+                label.textContent = `버킷 ${i}:`;
+                bucketRow.appendChild(label);
+
+                const itemsContainer = document.createElement('div');
+                itemsContainer.classList.add('radix-sim-bucket-items-container');
+                // Ensure buckets[i] exists and is an array
+                if (buckets[i] && Array.isArray(buckets[i])) {
+                    buckets[i].forEach(item => {
+                        const bucketItem = document.createElement('span');
+                        bucketItem.classList.add('radix-sim-bucket-item');
+                        bucketItem.textContent = item;
+                        itemsContainer.appendChild(bucketItem);
+                    });
+                }
+                
+                bucketRow.appendChild(itemsContainer);
+                bucketsDiv.appendChild(bucketRow);
+            }
+            container.appendChild(bucketsDiv);
+        }
+
+        async function startRadixSortSimulation() {
+            if (radixInterval) clearInterval(radixInterval);
+            radixArr = parseInput('radixInput');
+            if (radixArr.length === 0) { showModal("유효한 숫자를 입력해주세요 (예: 170,45,75,90,802)."); return; }
+            if (radixArr.some(num => isNaN(num) || num < 0)) { showModal("기수 정렬은 음수 또는 유효하지 않은 숫자를 지원하지 않습니다. 양의 정수만 입력해주세요."); return; }
+
+            radixSteps = [];
+            radixCurrentStep = 0;
+            document.getElementById('radixSteps').innerHTML = '';
+
+            let tempArr = [...radixArr];
+            // For radix sort, maxVal is not for bar height, but for getting max number to determine passes
+            let maxNum = get_maxSimulate(tempArr); 
+
+            radixSteps.push({ arr: [...tempArr], message: `초기 상태: [${tempArr.join(', ')}]`, buckets: new Array(10).fill().map(() => []), sortedIndices: [] });
+
+            let exp = 1; // Current digit place (1, 10, 100...)
+
+            while (Math.floor(maxNum / exp) > 0) {
+                let currentBuckets = new Array(10).fill().map(() => []);
+                
+                // --- Distribution Phase ---
+                radixSteps.push({ 
+                    arr: [...tempArr], 
+                    message: `[분배 단계] ${exp}의 자릿수(${Math.floor(exp).toLocaleString()}) 기준으로 숫자를 버킷에 분배합니다.`, 
+                    buckets: JSON.parse(JSON.stringify(currentBuckets)), 
+                    activeIndices: Array.from({length: tempArr.length}, (_, i) => i) // Highlight all elements being processed
+                });
+
+                for (let i = 0; i < tempArr.length; i++) {
+                    let digit = Math.floor((tempArr[i] / exp) % 10);
+                    currentBuckets[digit].push(tempArr[i]);
+                    radixSteps.push({ 
+                        arr: [...tempArr], 
+                        activeIndices: [i], // Highlight the current number being distributed
+                        message: `숫자 ${tempArr[i]}을(를) ${exp}의 자릿수(${digit}) 버킷에 분배.`, 
+                        buckets: JSON.parse(JSON.stringify(currentBuckets)) // Clone buckets to capture state change
+                    });
+                }
+                radixSteps.push({ 
+                    arr: [...tempArr], 
+                    message: `[분배 완료] ${exp}의 자릿수 분배 완료.`, 
+                    buckets: JSON.parse(JSON.stringify(currentBuckets)),
+                    activeIndices: [] // Clear active indices after distribution
+                });
+
+
+                // --- Collection Phase ---
+                let k = 0;
+                let collectMessage = `[수집 단계] 버킷에서 정렬된 순서로 숫자를 수집 중...`;
+                // Create a temporary array to show the collection progress
+                let tempCollectedArr = new Array(tempArr.length).fill(null); 
+
+                for (let i = 0; i < 10; i++) { // Iterate through buckets 0-9
+                    if (currentBuckets[i].length > 0) {
+                        for (let val of currentBuckets[i]) {
+                            tempArr[k] = val; // Update the actual array
+                            tempCollectedArr[k] = val; // Update the visual collected array
+                            radixSteps.push({ 
+                                arr: [...tempArr], // Show the actual array state
+                                message: `${collectMessage} 버킷 ${i}에서 ${val} 수집.`, 
+                                buckets: JSON.parse(JSON.stringify(currentBuckets)), // Still show buckets during collection
+                                activeIndices: [k] // Highlight the position being filled
+                            });
+                            k++;
+                        }
+                    }
+                }
+                // After all collection for current exp, clear buckets and show final array state for this pass
+                radixSteps.push({ 
+                    arr: [...tempArr], 
+                    message: `[수집 완료] ${exp}의 자릿수 정렬 완료. 현재 배열 상태: [${tempArr.join(', ')}]`, 
+                    buckets: new Array(10).fill().map(() => []), // Clear buckets
+                    sortedIndices: (exp * 10 > maxNum) ? Array.from({length: tempArr.length}, (_, k) => k) : [] // Mark as sorted only if it's the final pass
+                }); 
+
+                exp *= 10;
+            }
+            radixSteps.push({ arr: [...tempArr], sortedIndices: Array.from({length: tempArr.length}, (_, k) => k), message: `정렬 완료: [${tempArr.join(', ')}]`, buckets: new Array(10).fill().map(() => []) });
+
+            // Start the interval
+            radixInterval = setInterval(() => nextSimulationStep(radixSteps, 'radixVisualization', maxNum, 'radixSteps', radixCurrentStep++, () => clearInterval(radixInterval), renderRadixVisualization), simulationSpeed);
+        }
+
+        function resetRadixSortSimulation() {
+            clearInterval(radixInterval);
+            radixArr = [];
+            radixSteps = [];
+            radixCurrentStep = 0;
+            document.getElementById('radixVisualization').innerHTML = '';
+            document.getElementById('radixSteps').innerHTML = '';
+            document.getElementById('radixInput').value = '';
+        }
+
+        // =======================================================
+        // 전체 시뮬레이션 제어 (다음 단계 진행)
+        // =======================================================
+        function nextSimulationStep(stepsArray, visualizationId, maxVal, stepsContainerId, currentStepIndex, clearIntervalCallback, renderFunction) {
+            if (currentStepIndex < stepsArray.length) {
+                const step = stepsArray[currentStepIndex];
+                if (renderFunction === renderRadixVisualization) {
+                    // For Radix, pass additional buckets parameter
+                    renderFunction(step.arr, visualizationId, maxVal, step.activeIndices || [], step.pivotIndex || -1, step.sortedIndices || [], step.comparingIndices || [], step.swappingIndices || [], step.buckets || []);
+                } else {
+                    // For other sorts, pass standard parameters
+                    renderFunction(step.arr, visualizationId, maxVal, step.activeIndices || [], step.pivotIndex || -1, step.sortedIndices || [], step.comparingIndices || [], step.swappingIndices || []);
+                }
+                logStep(step.message, stepsContainerId);
+            } else {
+                if (clearIntervalCallback) clearIntervalCallback();
+            }
+        }
+
+        // 페이지 로드 시 모든 시뮬레이션 초기화 (입력 필드 초기화 등)
+        document.addEventListener('DOMContentLoaded', () => {
+            resetSelectionSortSimulation();
+            resetInsertionSortSimulation();
+            resetBubbleSortSimulation();
+            resetQuickSortSimulation();
+            resetMergeSortSimulation();
+            resetShellSortSimulation();
+            resetRadixSortSimulation();
+        });
+
+    </script>
+</body>
+</html>

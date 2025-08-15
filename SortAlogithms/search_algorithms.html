@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자료구조 교육: 탐색 알고리즘</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .section {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2.5rem;
+        }
+        pre {
+            background-color: #1f2937;
+            color: #d1d5db;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        /* 시뮬레이션 스타일 */
+        .array-container, .hash-table-container, .tree-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            min-height: 100px; /* 충분한 높이 확보 */
+            position: relative;
+        }
+        .array-element, .hash-bucket, .tree-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border: 2px solid #cbd5e0; /* Gray-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            margin: 0.25rem;
+            font-weight: 600; /* font-semibold */
+            background-color: #e2e8f0; /* Gray-200 */
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            position: relative;
+        }
+        .array-element.current-check, .tree-node.current-check {
+            background-color: #a7f3d0; /* Green-200 */
+            border-color: #10b981; /* Green-500 */
+        }
+        .array-element.found, .tree-node.found {
+            background-color: #34d399; /* Green-400 */
+            border-color: #059669; /* Green-700 */
+        }
+        .array-element.low-ptr, .array-element.high-ptr, .array-element.mid-ptr {
+            background-color: #bfdbfe; /* Blue-200 */
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .ptr-label {
+            position: absolute;
+            top: -20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #4a5568;
+        }
+        .low-label { left: 0; }
+        .high-label { right: 0; }
+        .mid-label { top: -30px; }
+
+        .hash-bucket {
+            width: 80px;
+            height: auto; /* 내용에 따라 높이 조절 */
+            min-height: 60px;
+            justify-content: flex-start;
+            padding: 0.5rem;
+        }
+        .hash-bucket-index {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #4a5568;
+        }
+        .hash-entry {
+            background-color: #a7f3d0;
+            border: 1px solid #10b981;
+            padding: 0.25rem 0.5rem;
+            margin-bottom: 0.25rem;
+            border-radius: 0.25rem;
+            width: 100%;
+            text-align: center;
+            word-break: break-all; /* 긴 문자열 처리 */
+        }
+        .hash-entry.probing {
+            background-color: #fcd34d; /* Yellow-300 */
+            border-color: #fbbf24; /* Yellow-400 */
+        }
+        .hash-entry.inserted {
+            background-color: #34d399; /* Green-400 */
+            border-color: #059669; /* Green-700 */
+        }
+        .hash-bucket.highlighted {
+            background-color: #bfdbfe; /* Blue-200 */
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .chain-node {
+            background-color: #d1e7dd; /* Light green */
+            border: 1px solid #28a745; /* Green */
+            padding: 0.25rem 0.5rem;
+            margin-bottom: 0.25rem;
+            border-radius: 0.25rem;
+            width: 100%;
+            text-align: center;
+        }
+        .chain-node.current-insert {
+             background-color: #fcd34d; /* Yellow-300 */
+             border-color: #fbbf24; /* Yellow-400 */
+        }
+        .index-block {
+            background-color: #d1e7dd;
+            border: 1px solid #28a745;
+            padding: 0.5rem;
+            margin: 0.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+        }
+        .index-block.highlighted {
+            background-color: #bfdbfe; /* Blue-200 */
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .index-pointer {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        /* 트리 시뮬레이션 스타일 */
+        .tree-simulation-container { /* New container for AVL tree specific section layout */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .tree-display-area { /* This will hold the actual nodes */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            width: 100%; /* Ensure it takes full width */
+        }
+        .tree-node-wrapper {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+        }
+        .tree-node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%; /* Make it round */
+            background-color: #e2e8f0;
+            border: 2px solid #cbd5e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 10px;
+            position: relative;
+            z-index: 10;
+        }
+        .tree-node.highlighted-path {
+            background-color: #bfdbfe; /* Blue-200 */
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .tree-node.found-node {
+            background-color: #34d399; /* Green-400 */
+            border-color: #059669; /* Green-700 */
+        }
+        .tree-line {
+            position: absolute;
+            background-color: #9ca3af;
+            height: 2px;
+            transform-origin: 0 0;
+            z-index: 5;
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 2rem; }
+            p { font-size: 1rem; }
+            .section { padding: 1.5rem; }
+            .array-element, .hash-bucket {
+                width: 50px;
+                height: 50px;
+                font-size: 0.875rem;
+            }
+            .tree-node {
+                width: 40px;
+                height: 40px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+
+<div class="container">
+
+    <!-- 제목 및 개요 섹션 -->
+    <header class="text-center mb-16">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">탐색 알고리즘 🔍</h1>
+        <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+            자료구조의 핵심인 탐색 알고리즘을 깊이 있게 이해하고, 실제 코드로 구현해보는 교육용 웹 페이지입니다. 데이터를 효율적으로 찾는 다양한 방법을 알아봅시다.
+        </p>
+    </header>
+
+    <!-- 각 알고리즘 섹션 컨테이너 -->
+    <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- 순차 탐색 (Linear Search) -->
+        <section class="section">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2 text-4xl">🚶</span> 순차 탐색 (Linear Search)
+            </h2>
+            <p class="text-gray-600 mb-4">
+                <span class="font-semibold text-gray-800">개념:</span> 가장 기본적인 탐색 방법으로, 배열의 첫 번째 요소부터 순서대로 찾고자 하는 값과 비교합니다.
+            </p>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">동작 방식 (시뮬레이션):</p>
+                <p class="text-gray-600 mb-2">
+                    아래 배열에서 값을 입력하고 '탐색 시작' 버튼을 눌러보세요. 각 단계별로 현재 비교하는 요소가 하이라이트됩니다.
+                </p>
+                <div class="linear-search-simulation">
+                    <div class="array-container" id="linearArrayContainer">
+                        <!-- JS로 배열 요소 생성 -->
+                    </div>
+                    <div id="linearSimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                        <input type="text" id="linearSearchTargetInput" placeholder="찾을 값 입력 (예: 15)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="startLinearSearchSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">탐색 시작</button>
+                    </div>
+                    <div class="mt-4 flex justify-center">
+                        <button onclick="prevLinearStep()" id="linearPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                        <button onclick="nextLinearStep()" id="linearNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-gray-600">
+                <div><span class="font-semibold text-gray-800">시간 복잡도:</span> 최선 O(1), 평균 O(n), 최악 O(n)</div>
+                <div><span class="font-semibold text-gray-800">장점:</span> 데이터가 정렬되어 있지 않아도 사용 가능합니다. 구현이 간단합니다.</div>
+                <div><span class="font-semibold text-gray-800">단점:</span> 데이터가 많을수록 비효율적입니다.</div>
+            </div>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">C 언어 코드 예시:</p>
+                <pre><code id="linearSearchCode">/* 순차 탐색 C 언어 구현 */
+#include &lt;stdio.h&gt;
+
+// 배열 정의 (예시)
+int list[] = {10, 5, 20, 15, 30, 25};
+int n = sizeof(list) / sizeof(list[0]); // 배열의 크기
+
+int linear_search(int key) {
+    for (int i = 0; i < n; i++) {
+        if (list[i] == key) {
+            return i; // 탐색 성공: 해당 인덱스 반환
+        }
+    }
+    return -1; // 탐색 실패: -1 반환
+}
+
+int main() {
+    int target_value = 20;
+    int result_index = linear_search(target_value);
+
+    if (result_index != -1) {
+        printf("목표값 %d는(은) 인덱스 %d에서 발견되었습니다.\n", target_value, result_index);
+    } else {
+        printf("목표값 %d를(을) 찾을 수 없습니다.\n", target_value);
+    }
+
+    target_value = 7;
+    result_index = linear_search(target_value);
+
+    if (result_index != -1) {
+        printf("목표값 %d는(은) 인덱스 %d에서 발견되었습니다.\n", target_value, result_index);
+    } else {
+        printf("목표값 %d를(을) 찾을 수 없습니다.\n", target_value);
+    }
+
+    return 0;
+}</code></pre>
+            </div>
+            <div class="mt-6 text-center text-gray-500">
+                C 언어 코드는 브라우저에서 직접 실행할 수 없습니다. 개발 환경에서 컴파일하여 실행해 보세요.
+            </div>
+        </section>
+
+        <!-- 이진 탐색 (Binary Search) -->
+        <section class="section">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2 text-4xl">🔪</span> 이진 탐색 (Binary Search)
+            </h2>
+            <p class="text-gray-600 mb-4">
+                <span class="font-semibold text-gray-800">개념:</span> <strong>정렬된 배열</strong>에서 탐색 범위를 절반씩 줄여가며 값을 찾는 매우 효율적인 방법입니다.
+            </p>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">동작 방식 (시뮬레이션):</p>
+                <p class="text-gray-600 mb-2">
+                    아래 <strong>정렬된</strong> 배열에서 값을 입력하고 '탐색 시작' 버튼을 눌러보세요. 'low', 'high', 'mid' 포인터의 변화를 확인하며 탐색 범위가 줄어드는 것을 볼 수 있습니다.
+                </p>
+                <div class="binary-search-simulation">
+                    <div class="array-container" id="binaryArrayContainer">
+                        <!-- JS로 배열 요소 생성 -->
+                    </div>
+                    <div id="binarySimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                        <input type="text" id="binarySearchTargetInput" placeholder="찾을 값 입력 (예: 23)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="startBinarySearchSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">탐색 시작</button>
+                    </div>
+                    <div class="mt-4 flex justify-center">
+                        <button onclick="prevBinaryStep()" id="binaryPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                        <button onclick="nextBinaryStep()" id="binaryNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-gray-600">
+                <div><span class="font-semibold text-gray-800">시간 복잡도:</span> 최선 O(1), 평균 O(log n), 최악 O(log n)</div>
+                <div><span class="font-semibold text-gray-800">장점:</span> 대규모 데이터셋에서 매우 빠릅니다.</div>
+                <div><span class="font-semibold text-gray-800">단점:</span> 데이터가 반드시 정렬되어 있어야 합니다.</div>
+            </div>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">C 언어 코드 예시:</p>
+                <pre><code id="binarySearchCode">/* 이진 탐색 C 언어 구현 (반복문) */
+#include &lt;stdio.h&gt;
+
+// 배열 정의 (예시, 반드시 정렬되어 있어야 함)
+int sorted_list[] = {2, 5, 8, 12, 16, 23, 38, 56, 72, 91};
+int sorted_n = sizeof(sorted_list) / sizeof(sorted_list[0]); // 배열의 크기
+
+int binary_search(int key) {
+    int low = 0;
+    int high = sorted_n - 1;
+    int mid;
+
+    while (low <= high) {
+        mid = low + (high - low) / 2; // 오버플로우 방지를 위한 계산
+
+        if (sorted_list[mid] == key) {
+            return mid; // 탐색 성공
+        } else if (sorted_list[mid] < key) {
+            low = mid + 1; // 오른쪽 부분 탐색
+        } else {
+            high = mid - 1; // 왼쪽 부분 탐색
+        }
+    }
+    return -1; // 탐색 실패
+}
+
+int main() {
+    int target_value_binary = 23;
+    int result_index_binary = binary_search(target_value_binary);
+
+    if (result_index_binary != -1) {
+        printf("목표값 %d는(은) 인덱스 %d에서 발견되었습니다.\n", target_value_binary, result_index_binary);
+    } else {
+        printf("목표값 %d를(을) 찾을 수 없습니다.\n", target_value_binary);
+    }
+
+    target_value_binary = 100;
+    result_index_binary = binary_search(target_value_binary);
+
+    if (result_index_binary != -1) {
+        printf("목표값 %d는(은) 인덱스 %d에서 발견되었습니다.\n", target_value_binary, result_index_binary);
+    } else {
+        printf("목표값 %d를(을) 찾을 수 없습니다.\n", target_value_binary);
+    }
+
+    return 0;
+}</code></pre>
+            </div>
+            <div class="mt-6 text-center text-gray-500">
+                C 언어 코드는 브라우저에서 직접 실행할 수 없습니다. 개발 환경에서 컴파일하여 실행해 보세요.
+            </div>
+        </section>
+
+        <!-- 색인 순차 탐색 (Index Sequential Search) -->
+        <section class="section">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2 text-4xl">📚</span> 색인 순차 탐색 (Index Sequential Search)
+            </h2>
+            <p class="text-gray-600 mb-4">
+                <span class="font-semibold text-gray-800">개념:</span> 순차 탐색과 이진 탐색의 장점을 결합한 방법입니다. 데이터를 여러 개의 블록으로 나누고, 각 블록의 시작점을 가리키는 별도의 <strong>색인 테이블(Index Table)</strong>을 사용하여 탐색 효율을 높입니다.
+            </p>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">동작 방식 (시뮬레이션):</p>
+                <p class="text-gray-600 mb-2">
+                    아래 배열에서 값을 입력하고 '탐색 시작' 버튼을 눌러보세요. 먼저 색인 테이블을 통해 적절한 블록을 찾고, 그 안에서 순차적으로 탐색하는 과정을 시각적으로 보여줍니다.
+                </p>
+                <div class="index-sequential-simulation">
+                    <div class="array-container" id="indexSeqArrayContainer">
+                        <!-- JS로 배열 요소 생성 -->
+                    </div>
+                    <div class="index-table-container mt-4 flex justify-center flex-wrap" id="indexTableContainer">
+                        <!-- JS로 인덱스 테이블 생성 -->
+                    </div>
+                    <div id="indexSeqSimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                        <input type="text" id="indexSeqSearchTargetInput" placeholder="찾을 값 입력 (예: 22)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="startIndexSeqSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">탐색 시작</button>
+                    </div>
+                    <div class="mt-4 flex justify-center">
+                        <button onclick="prevIndexSeqStep()" id="indexSeqPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                        <button onclick="nextIndexSeqStep()" id="indexSeqNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-gray-600">
+                <div><span class="font-semibold text-gray-800">시간 복잡도:</span> O(sqrt(n)) 또는 O(n/m + m) (m: 블록 크기)</div>
+                <div><span class="font-semibold text-gray-800">장점:</span> 대규모 정렬된 데이터에 효율적입니다.</div>
+                <div><span class="font-semibold text-gray-800">단점:</span> 데이터 정렬이 필수이며, 블록 크기 설정이 중요합니다.</div>
+            </div>
+        </section>
+
+        <!-- 보간 탐색 (Interpolation Search) -->
+        <section class="section">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2 text-4xl">🎯</span> 보간 탐색 (Interpolation Search)
+            </h2>
+            <p class="text-gray-600 mb-4">
+                <span class="font-semibold text-gray-800">개념:</span> <strong>정렬된 배열</strong>에서 이진 탐색보다 발전된 형태로, 키 값의 분포를 이용하여 다음 탐색 위치를 예측합니다. 주로 데이터가 균등하게 분포되어 있을 때 이진 탐색보다 빠릅니다.
+            </p>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">동작 방식 (시뮬레이션):</p>
+                <p class="text-gray-600 mb-2">
+                    아래 <strong>정렬된</strong> 배열에서 값을 입력하고 '탐색 시작' 버튼을 눌러보세요. 'low', 'high'와 예측된 'pos'의 변화를 확인하며 탐색하는 것을 볼 수 있습니다.
+                </p>
+                <div class="interpolation-search-simulation">
+                    <div class="array-container" id="interpolationArrayContainer">
+                        <!-- JS로 배열 요소 생성 -->
+                    </div>
+                    <div id="interpolationSimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                    <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                        <input type="text" id="interpolationSearchTargetInput" placeholder="찾을 값 입력 (예: 50)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="startInterpolationSearchSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">탐색 시작</button>
+                    </div>
+                    <div class="mt-4 flex justify-center">
+                        <button onclick="prevInterpolationStep()" id="interpolationPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                        <button onclick="nextInterpolationStep()" id="interpolationNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-gray-600">
+                <div><span class="font-semibold text-gray-800">시간 복잡도:</span> 평균 O(log(log n)), 최악 O(n)</div>
+                <div><span class="font-semibold text-gray-800">장점:</span> 데이터가 균등 분포일 때 이진 탐색보다 빠릅니다.</div>
+                <div><span class="font-semibold text-gray-800">단점:</span> 데이터가 균등 분포가 아닐 때 성능이 저하될 수 있습니다.</div>
+            </div>
+        </section>
+
+        <!-- 균형 이진 탐색 트리 (Balanced Binary Search Tree - AVL 트리 예시) -->
+        <section class="section">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2 text-4xl">🌲</span> 균형 이진 탐색 트리 (AVL 트리 예시)
+            </h2>
+            <p class="text-gray-600 mb-4">
+                <span class="font-semibold text-gray-800">개념:</span> 이진 탐색 트리는 삽입 순서에 따라 트리의 균형이 깨질 수 있으며, 이는 최악의 경우 선형 탐색과 같은 성능(O(n))을 야기합니다. <strong>균형 이진 탐색 트리(예: AVL 트리, Red-Black 트리)</strong>는 노드 삽입 및 삭제 시 자동으로 트리의 균형을 유지하여 항상 O(log n)의 탐색 성능을 보장합니다.
+            </p>
+            <div class="mb-4 tree-simulation-container"> <!-- New container for AVL tree specific section layout -->
+                <p class="font-semibold text-gray-800">동작 방식 (시뮬레이션):</p>
+                <p class="text-gray-600 mb-2">
+                    아래의 미리 정의된 AVL 트리에서 값을 입력하고 '탐색 시작' 버튼을 눌러보세요. 검색 경로를 따라가며 노드가 하이라이트됩니다.
+                </p>
+                <div class="tree-display-area" id="avlTreeDisplayArea"> <!-- This will hold the actual nodes -->
+                    <!-- JS로 트리 노드 생성 (예시 트리 구조) -->
+                </div>
+                <div id="avlSimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                    <input type="text" id="avlSearchTargetInput" placeholder="찾을 값 입력 (예: 60)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="startAvlSearchSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">탐색 시작</button>
+                </div>
+                <div class="mt-4 flex justify-center">
+                    <button onclick="prevAvlStep()" id="avlPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                    <button onclick="nextAvlStep()" id="avlNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-gray-600">
+                <div><span class="font-semibold text-gray-800">시간 복잡도:</span> 삽입/삭제/탐색 모두 O(log n)</div>
+                <div><span class="font-semibold text-gray-800">장점:</span> 항상 균형을 유지하여 안정적인 O(log n) 성능을 보장합니다.</div>
+                <div><span class="font-semibold text-gray-800">단점:</span> 삽입/삭제 시 트리를 재균형하는 추가적인 연산(회전)이 필요하여 구현이 복잡합니다.</div>
+            </div>
+        </section>
+
+        <!-- 해싱 (Hashing) -->
+        <section class="section lg:col-span-2"> <!-- 이 섹션은 전체 너비를 차지하도록 설정 -->
+            <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2 text-4xl">🔑</span> 해싱 (Hashing)
+            </h2>
+            <p class="text-gray-600 mb-4">
+                <span class="font-semibold text-gray-800">개념:</span> 키 값에 대한 산술 연산을 통해 테이블의 주소를 계산하여 항목에 직접 접근하는 방법입니다. 데이터의 삽입, 삭제, 탐색을 매우 빠르게 수행할 수 있습니다.
+            </p>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">해시 함수:</p>
+                <p class="text-gray-600">
+                    탐색 키를 입력받아 데이터가 저장될 해시 테이블의 주소를 생성하는 함수입니다. 좋은 해시 함수는 충돌(Collision)을 최소화하고 주소 영역에 데이터를 고르게 분포시켜야 합니다. 계산이 빨라야 합니다.
+                </p>
+                <div class="mt-4 text-center">
+                    <!-- Placeholder for Hashing Image -->
+                    <p class="text-sm text-gray-500 mt-2">그림: 해시 함수 동작 원리</p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">해시 테이블:</p>
+                <p class="text-gray-600">
+                    해시 함수에 의해 계산된 주소에 데이터를 저장하고 검색하는 자료구조입니다. M개의 버킷(Bucket)으로 구성되며, 각 버킷은 하나 이상의 슬롯(Slot)을 가질 수 있습니다.
+                </p>
+                <div class="mt-4 text-center">
+                    <!-- Placeholder for Hash Table Structure Image -->
+                    <p class="text-sm text-gray-500 mt-2">그림: 해시 테이블 구조</p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <p class="font-semibold text-gray-800">충돌 (Collision) 및 해결책 (시뮬레이션):</p>
+                <p class="text-gray-600 mb-2">
+                    서로 다른 탐색 키가 같은 해시 주소를 가지는 현상을 <strong>충돌</strong>이라고 합니다. 충돌이 발생하면 해시 테이블에 항목 저장이 불가능해지므로 효과적인 해결 방법이 필요합니다.
+                </p>
+                <ul class="list-disc list-inside text-gray-600 mt-2">
+                    <li>
+                        <strong>선형 조사법 (Linear Probing) 시뮬레이션:</strong>
+                        <p class="text-gray-600 ml-4 mb-2">
+                            키를 입력하고 '삽입 시작' 버튼을 눌러보세요. 충돌 시 다음 비어있는 칸을 찾는 과정을 시각적으로 보여줍니다. (테이블 크기: 7)
+                        </p>
+                        <div class="linear-probing-simulation">
+                            <div class="hash-table-container" id="linearProbingTableContainer">
+                                <!-- JS로 해시 테이블 버킷 생성 -->
+                            </div>
+                            <div id="linearProbingSimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                            <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                                <input type="text" id="linearProbingKeyInput" placeholder="삽입할 키 입력 (예: 8, 1, 9)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="startLinearProbingSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">삽입 시작</button>
+                            </div>
+                             <div class="mt-4 flex justify-center">
+                                <button onclick="prevLinearProbingStep()" id="linearProbingPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                                <button onclick="nextLinearProbingStep()" id="linearProbingNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="mt-4">
+                        <strong>이차 조사법 (Quadratic Probing) 시뮬레이션:</strong>
+                        <p class="text-gray-600 ml-4 mb-2">
+                            키를 입력하고 '삽입 시작' 버튼을 눌러보세요. 충돌 시 이차 함수(i^2)를 사용하여 다음 위치를 찾는 과정을 시각적으로 보여줍니다. (테이블 크기: 7)
+                        </p>
+                         <div class="quadratic-probing-simulation">
+                            <div class="hash-table-container" id="quadraticProbingTableContainer">
+                                <!-- JS로 해시 테이블 버킷 생성 -->
+                            </div>
+                            <div id="quadraticProbingSimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                            <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                                <input type="text" id="quadraticProbingKeyInput" placeholder="삽입할 키 입력 (예: 8, 15, 22)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="startQuadraticProbingSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">삽입 시작</button>
+                            </div>
+                             <div class="mt-4 flex justify-center">
+                                <button onclick="prevQuadraticProbingStep()" id="quadraticProbingPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                                <button onclick="nextQuadraticProbingStep()" id="quadraticProbingNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="mt-4">
+                        <strong>이중 해싱법 (Double Hashing) 시뮬레이션:</strong>
+                        <p class="text-gray-600 ml-4 mb-2">
+                            키를 입력하고 '삽입 시작' 버튼을 눌러보세요. 두 번째 해시 함수를 사용하여 탐색 간격을 동적으로 결정하고 충돌을 해결하는 과정을 시각적으로 보여줍니다. (테이블 크기: 7)
+                        </p>
+                        <div class="double-hashing-simulation">
+                            <div class="hash-table-container" id="doubleHashingTableContainer">
+                                <!-- JS로 해시 테이블 버킷 생성 -->
+                            </div>
+                            <div id="doubleHashingSimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                            <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                                <input type="text" id="doubleHashingKeyInput" placeholder="삽입할 키 입력 (예: 8, 1, 9)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="startDoubleHashingSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">삽입 시작</button>
+                            </div>
+                             <div class="mt-4 flex justify-center">
+                                <button onclick="prevDoubleHashingStep()" id="doubleHashingPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                                <button onclick="nextDoubleHashingStep()" id="doubleHashingNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="mt-4">
+                        <strong>체이닝 (Chaining) 시뮬레이션:</strong>
+                        <p class="text-gray-600 ml-4 mb-2">
+                            키를 입력하고 '삽입 시작' 버튼을 눌러보세요. 각 버킷의 연결 리스트에 항목이 추가되는 모습을 시각적으로 보여줍니다. (테이블 크기: 7)
+                        </p>
+                        <div class="chaining-simulation">
+                            <div class="hash-table-container" id="chainingTableContainer">
+                                <!-- JS로 해시 테이블 버킷 (연결 리스트 표현) 생성 -->
+                            </div>
+                            <div id="chainingSimulationMessage" class="text-center mt-4 font-medium text-gray-700"></div>
+                            <div class="mt-6 flex flex-col sm:flex-row justify-center items-center">
+                                <input type="text" id="chainingKeyInput" placeholder="삽입할 키 입력 (예: 8, 1, 9)" class="border p-2 rounded-lg mr-0 sm:mr-2 mb-2 sm:mb-0 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="startChainingSimulation()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md w-full sm:w-auto">삽입 시작</button>
+                            </div>
+                             <div class="mt-4 flex justify-center">
+                                <button onclick="prevChainingStep()" id="chainingPrevBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm mr-2" disabled>이전 단계</button>
+                                <button onclick="nextChainingStep()" id="chainingNextBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors duration-200 shadow-sm" disabled>다음 단계</button>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 요약 및 결론 섹션 -->
+    <section class="section">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4 flex items-center">
+            <span class="mr-2 text-4xl">📝</span> 요약 및 비교
+        </h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 shadow-sm rounded-xl overflow-hidden">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            알고리즘
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            시간 복잡도
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            사용 조건
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            주요 특징
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">순차 탐색</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">O(n)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">데이터 정렬 무관</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">가장 단순한 탐색</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">이진 탐색</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">O(log n)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">데이터 정렬 필수</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">매우 빠른 탐색</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">색인 순차 탐색</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">O(sqrt(n))</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">대규모 정렬 데이터</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">블록 단위 탐색</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">보간 탐색</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">O(log(log n)) 평균</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">균등 분포 정렬 데이터</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">값 분포 예측</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">균형 이진 탐색 트리</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">O(log n)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">동적 데이터, 안정적 성능</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">자가 균형 조정</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">해싱 (선형 조사법)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">평균 O(1), 최악 O(n)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">직접 주소 지정</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">충돌 시 다음 빈 공간</td>
+                    </tr>
+                     <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">해싱 (이차 조사법)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">평균 O(1), 최악 O(n)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">직접 주소 지정</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">충돌 시 i^2 증가</td>
+                    </tr>
+                     <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">해싱 (이중 해싱법)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">평균 O(1), 최악 O(n)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">직접 주소 지정</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">두 번째 해시 함수 사용</td>
+                    </tr>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">해싱 (체이닝)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">평균 O(1), 최악 O(n)</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">직접 주소 지정</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">연결 리스트로 충돌 처리</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="mt-8 text-gray-600 text-center">
+            각 알고리즘은 고유의 장단점을 가지고 있으며, 해결하고자 하는 문제의 특성에 따라 적절한 것을 선택하는 것이 중요합니다.
+        </p>
+    </section>
+
+</div>
+
+<!-- 커스텀 모달 UI -->
+<div id="customModal" class="modal hidden">
+    <div class="modal-content">
+        <h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
+        <p id="modalMessage" class="text-gray-700 mb-6"></p>
+        <button onclick="hideModal()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-md">닫기</button>
+    </div>
+</div>
+
+<script>
+// ---------- 공통 유틸리티 함수 ----------
+function showModal(title, message) {
+    const modal = document.getElementById('customModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modal.classList.remove('hidden');
+}
+
+function hideModal() {
+    const modal = document.getElementById('customModal');
+    modal.classList.add('hidden');
+}
+
+// ---------- 순차 탐색 시뮬레이션 ----------
+const linearData = [9, 5, 8, 3, 7]; // 시뮬레이션에 사용할 고정 데이터
+let linearSimulationSteps = [];
+let currentLinearStep = 0;
+
+function initLinearSearchSimulation() {
+    const container = document.getElementById('linearArrayContainer');
+    container.innerHTML = ''; // 기존 요소 제거
+    linearData.forEach((num, index) => {
+        const element = document.createElement('div');
+        element.className = 'array-element';
+        element.textContent = num;
+        element.dataset.index = index; // 데이터 인덱스 저장
+        container.appendChild(element);
+    });
+    document.getElementById('linearSimulationMessage').textContent = '숫자를 입력하고 탐색을 시작하세요.';
+    document.getElementById('linearPrevBtn').disabled = true;
+    document.getElementById('linearNextBtn').disabled = true;
+    currentLinearStep = 0;
+    linearSimulationSteps = [];
+}
+
+function startLinearSearchSimulation() {
+    const targetInput = document.getElementById('linearSearchTargetInput');
+    const targetValue = parseInt(targetInput.value);
+
+    if (isNaN(targetValue)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    linearSimulationSteps = [];
+    currentLinearStep = 0;
+    
+    // 시뮬레이션 단계 기록
+    for (let i = 0; i < linearData.length; i++) {
+        linearSimulationSteps.push({
+            index: i,
+            message: `${linearData[i]}와 ${targetValue} 비교: ${linearData[i] === targetValue ? '같음!' : '다름.'}`,
+            found: linearData[i] === targetValue
+        });
+        if (linearData[i] === targetValue) {
+            linearSimulationSteps.push({
+                index: i,
+                message: `목표값 ${targetValue}를(을) 인덱스 ${i}에서 발견! 탐색 성공.`,
+                found: true,
+                final: true
+            });
+            break;
+        }
+    }
+    if (!linearSimulationSteps[linearSimulationSteps.length - 1]?.final) {
+        linearSimulationSteps.push({
+            index: -1, // 찾지 못함
+            message: `배열 끝까지 탐색했지만 목표값 ${targetValue}를(을) 찾지 못했습니다. 탐색 실패.`,
+            found: false,
+            final: true
+        });
+    }
+
+    renderLinearSearchStep(currentLinearStep);
+    document.getElementById('linearPrevBtn').disabled = true;
+    document.getElementById('linearNextBtn').disabled = linearSimulationSteps.length <= 1;
+}
+
+function renderLinearSearchStep(step) {
+    const elements = document.querySelectorAll('#linearArrayContainer .array-element');
+    elements.forEach(el => {
+        el.classList.remove('current-check', 'found');
+    });
+
+    if (linearSimulationSteps.length === 0) return;
+
+    const currentStepData = linearSimulationSteps[step];
+    const messageDiv = document.getElementById('linearSimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    if (currentStepData.index !== -1) {
+        const currentElement = elements[currentStepData.index];
+        if (currentElement) {
+            if (currentStepData.found) {
+                currentElement.classList.add('found');
+            } else {
+                currentElement.classList.add('current-check');
+            }
+        }
+    }
+
+    document.getElementById('linearPrevBtn').disabled = currentLinearStep === 0;
+    document.getElementById('linearNextBtn').disabled = currentLinearStep === linearSimulationSteps.length - 1;
+}
+
+function nextLinearStep() {
+    if (currentLinearStep < linearSimulationSteps.length - 1) {
+        currentLinearStep++;
+        renderLinearSearchStep(currentLinearStep);
+    }
+}
+
+function prevLinearStep() {
+    if (currentLinearStep > 0) {
+        currentLinearStep--;
+        renderLinearSearchStep(currentLinearStep);
+    }
+}
+
+// ---------- 이진 탐색 시뮬레이션 ----------
+const binaryData = [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]; // 시뮬레이션에 사용할 정렬된 데이터
+let binarySimulationSteps = [];
+let currentBinaryStep = 0;
+
+function initBinarySearchSimulation() {
+    const container = document.getElementById('binaryArrayContainer');
+    container.innerHTML = '';
+    binaryData.forEach((num, index) => {
+        const element = document.createElement('div');
+        element.className = 'array-element';
+        element.textContent = num;
+        element.dataset.index = index;
+        container.appendChild(element);
+    });
+    document.getElementById('binarySimulationMessage').textContent = '숫자를 입력하고 탐색을 시작하세요.';
+    document.getElementById('binaryPrevBtn').disabled = true;
+    document.getElementById('binaryNextBtn').disabled = true;
+    currentBinaryStep = 0;
+    binarySimulationSteps = [];
+}
+
+function startBinarySearchSimulation() {
+    const targetInput = document.getElementById('binarySearchTargetInput');
+    const targetValue = parseInt(targetInput.value);
+
+    if (isNaN(targetValue)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    binarySimulationSteps = [];
+    currentBinaryStep = 0;
+
+    let low = 0;
+    let high = binaryData.length - 1;
+
+    while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        binarySimulationSteps.push({
+            low: low,
+            high: high,
+            mid: mid,
+            message: `${binaryData[mid]}와 ${targetValue} 비교: ${binaryData[mid] === targetValue ? '같음!' : (binaryData[mid] < targetValue ? '작음. 오른쪽 탐색.' : '큼. 왼쪽 탐색.')}`,
+            found: binaryData[mid] === targetValue
+        });
+
+        if (binaryData[mid] === targetValue) {
+            binarySimulationSteps.push({
+                low: low,
+                high: high,
+                mid: mid,
+                message: `목표값 ${targetValue}를(을) 인덱스 ${mid}에서 발견! 탐색 성공.`,
+                found: true,
+                final: true
+            });
+            break;
+        } else if (binaryData[mid] < targetValue) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    if (!binarySimulationSteps[binarySimulationSteps.length - 1]?.final) {
+        binarySimulationSteps.push({
+            low: -1, // 찾지 못함
+            high: -1,
+            mid: -1,
+            message: `배열에 목표값 ${targetValue}를(을) 찾을 수 없습니다. 탐색 실패.`,
+            found: false,
+            final: true
+        });
+    }
+
+    renderBinarySearchStep(currentBinaryStep);
+    document.getElementById('binaryPrevBtn').disabled = true;
+    document.getElementById('binaryNextBtn').disabled = binarySimulationSteps.length <= 1;
+}
+
+function renderBinarySearchStep(step) {
+    const elements = document.querySelectorAll('#binaryArrayContainer .array-element');
+    elements.forEach(el => {
+        el.classList.remove('low-ptr', 'high-ptr', 'mid-ptr', 'current-check', 'found');
+        el.querySelectorAll('.ptr-label').forEach(label => label.remove()); // 기존 포인터 레이블 제거
+    });
+
+    if (binarySimulationSteps.length === 0) return;
+
+    const currentStepData = binarySimulationSteps[step];
+    const messageDiv = document.getElementById('binarySimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    if (currentStepData.low !== -1) {
+        if (elements[currentStepData.low]) {
+            elements[currentStepData.low].classList.add('low-ptr');
+            const label = document.createElement('span');
+            label.className = 'ptr-label low-label';
+            label.textContent = 'Low';
+            elements[currentStepData.low].appendChild(label);
+        }
+        if (elements[currentStepData.high]) {
+            elements[currentStepData.high].classList.add('high-ptr');
+            const label = document.createElement('span');
+            label.className = 'ptr-label high-label';
+            label.textContent = 'High';
+            elements[currentStepData.high].appendChild(label);
+        }
+        if (elements[currentStepData.mid]) {
+            elements[currentStepData.mid].classList.add('mid-ptr');
+            const label = document.createElement('span');
+            label.className = 'ptr-label mid-label';
+            label.textContent = 'Mid';
+            elements[currentStepData.mid].appendChild(label);
+        }
+        
+        // 현재 비교 대상 하이라이트
+        if (elements[currentStepData.mid] && !currentStepData.found) {
+            elements[currentStepData.mid].classList.add('current-check');
+        }
+        if (currentStepData.found && elements[currentStepData.mid]) {
+            elements[currentStepData.mid].classList.add('found');
+        }
+    }
+
+    document.getElementById('binaryPrevBtn').disabled = currentBinaryStep === 0;
+    document.getElementById('binaryNextBtn').disabled = currentBinaryStep === binarySimulationSteps.length - 1;
+}
+
+function nextBinaryStep() {
+    if (currentBinaryStep < binarySimulationSteps.length - 1) {
+        currentBinaryStep++;
+        renderBinarySearchStep(currentBinaryStep);
+    }
+}
+
+function prevBinaryStep() {
+    if (currentBinaryStep > 0) {
+        currentBinaryStep--;
+        renderBinarySearchStep(currentBinaryStep);
+    }
+}
+
+// ---------- 색인 순차 탐색 시뮬레이션 ----------
+const indexSeqData = [2, 6, 11, 13, 18, 20, 22, 27, 29, 30, 34, 38, 41, 42, 45, 47]; // 시뮬레이션 데이터
+const BLOCK_SIZE = 4; // 블록 크기
+const indexTable = [];
+for (let i = 0; i < indexSeqData.length; i += BLOCK_SIZE) {
+    indexTable.push({ key: indexSeqData[i], index: i });
+}
+
+let indexSeqSimulationSteps = [];
+let currentIndexSeqStep = 0;
+
+function initIndexSeqSimulation() {
+    const container = document.getElementById('indexSeqArrayContainer');
+    container.innerHTML = '';
+    indexSeqData.forEach((num, index) => {
+        const element = document.createElement('div');
+        element.className = 'array-element';
+        element.textContent = num;
+        element.dataset.index = index;
+        container.appendChild(element);
+    });
+
+    const indexTableContainer = document.getElementById('indexTableContainer');
+    indexTableContainer.innerHTML = '';
+    indexTable.forEach((entry, idx) => {
+        const blockDiv = document.createElement('div');
+        blockDiv.className = 'index-block';
+        blockDiv.innerHTML = `Key: ${entry.key}<br><span class="index-pointer">Idx: ${entry.index}</span>`;
+        blockDiv.dataset.blockIndex = idx;
+        indexTableContainer.appendChild(blockDiv);
+    });
+
+    document.getElementById('indexSeqSimulationMessage').textContent = '숫자를 입력하고 탐색을 시작하세요.';
+    document.getElementById('indexSeqPrevBtn').disabled = true;
+    document.getElementById('indexSeqNextBtn').disabled = true;
+    currentIndexSeqStep = 0;
+    indexSeqSimulationSteps = [];
+}
+
+function startIndexSeqSimulation() {
+    const targetInput = document.getElementById('indexSeqSearchTargetInput');
+    const targetValue = parseInt(targetInput.value);
+
+    if (isNaN(targetValue)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    indexSeqSimulationSteps = [];
+    currentIndexSeqStep = 0;
+
+    let found = false;
+    let blockFoundIndex = -1;
+
+    // 1. 색인 테이블 탐색 (선형 탐색으로 단순화)
+    for (let i = 0; i < indexTable.length; i++) {
+        indexSeqSimulationSteps.push({
+            stage: 'index_table_search',
+            blockIndex: i,
+            message: `색인 테이블에서 키 ${targetValue}에 대한 블록 탐색 중: ${indexTable[i].key}와 비교.`,
+            foundInBlock: false,
+            mainArrayIndex: -1
+        });
+        if (targetValue >= indexTable[i].key) { // 찾으려는 값이 현재 블록의 시작 키보다 크거나 같으면 이 블록 또는 다음 블록에 있을 수 있음
+            blockFoundIndex = i;
+        } else { // 찾으려는 값이 현재 블록의 시작 키보다 작으면 이전 블록으로 판단 (정렬되어 있으므로)
+            break;
+        }
+    }
+
+    if (blockFoundIndex === -1 && targetValue < indexTable[0].key) { // 첫 블록보다도 작으면 없음
+        indexSeqSimulationSteps.push({
+            stage: 'final',
+            message: `키 ${targetValue}를 찾을 수 없습니다 (첫 블록보다 작음).`,
+            found: false
+        });
+    } else {
+        // 실제 탐색할 블록의 시작 인덱스와 끝 인덱스 결정
+        const startIdx = indexTable[blockFoundIndex].index;
+        const endIdx = Math.min(startIdx + BLOCK_SIZE - 1, indexSeqData.length - 1);
+
+        indexSeqSimulationSteps.push({
+            stage: 'block_selected',
+            blockIndex: blockFoundIndex,
+            message: `키 ${targetValue}가 있을 것으로 예상되는 블록 [${startIdx}-${endIdx}] 선택. 이제 블록 내에서 순차 탐색합니다.`,
+            mainArrayIndex: -1
+        });
+
+        // 2. 해당 블록 내에서 순차 탐색
+        for (let i = startIdx; i <= endIdx; i++) {
+            indexSeqSimulationSteps.push({
+                stage: 'linear_in_block',
+                blockIndex: blockFoundIndex,
+                mainArrayIndex: i,
+                message: `블록 내에서 ${indexSeqData[i]}와 ${targetValue} 비교 중.`,
+                foundInBlock: indexSeqData[i] === targetValue
+            });
+            if (indexSeqData[i] === targetValue) {
+                indexSeqSimulationSteps.push({
+                    stage: 'final',
+                    message: `목표값 ${targetValue}를(을) 인덱스 ${i}에서 발견! 탐색 성공.`,
+                    found: true,
+                    mainArrayIndex: i
+                });
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            indexSeqSimulationSteps.push({
+                stage: 'final',
+                message: `키 ${targetValue}를 찾을 수 없습니다 (블록 내에 없음).`,
+                found: false
+            });
+        }
+    }
+    
+    renderIndexSeqStep(currentLinearStep);
+    document.getElementById('indexSeqPrevBtn').disabled = true;
+    document.getElementById('indexSeqNextBtn').disabled = indexSeqSimulationSteps.length <= 1;
+}
+
+function renderIndexSeqStep(step) {
+    const arrayElements = document.querySelectorAll('#indexSeqArrayContainer .array-element');
+    arrayElements.forEach(el => el.classList.remove('current-check', 'found', 'low-ptr', 'high-ptr'));
+    const indexBlocks = document.querySelectorAll('#indexTableContainer .index-block');
+    indexBlocks.forEach(block => block.classList.remove('highlighted'));
+
+    if (indexSeqSimulationSteps.length === 0) return;
+
+    const currentStepData = indexSeqSimulationSteps[step];
+    const messageDiv = document.getElementById('indexSeqSimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    if (currentStepData.stage === 'index_table_search') {
+        if (indexBlocks[currentStepData.blockIndex]) {
+            indexBlocks[currentStepData.blockIndex].classList.add('highlighted');
+        }
+    } else if (currentStepData.stage === 'block_selected') {
+        if (indexBlocks[currentStepData.blockIndex]) {
+            indexBlocks[currentStepData.blockIndex].classList.add('highlighted');
+        }
+        // 블록 범위 하이라이트
+        const startIdx = indexTable[currentStepData.blockIndex].index;
+        const endIdx = Math.min(startIdx + BLOCK_SIZE - 1, indexSeqData.length - 1);
+        for (let i = startIdx; i <= endIdx; i++) {
+            if (arrayElements[i]) arrayElements[i].classList.add('low-ptr'); // 블록 요소임을 표시 (blue)
+        }
+    } else if (currentStepData.stage === 'linear_in_block') {
+        // 이전 블록 선택 하이라이트 유지 (시각적 일관성)
+        if (indexBlocks[currentStepData.blockIndex]) {
+            indexBlocks[currentStepData.blockIndex].classList.add('highlighted');
+        }
+        const startIdx = indexTable[currentStepData.blockIndex].index;
+        const endIdx = Math.min(startIdx + BLOCK_SIZE - 1, indexSeqData.length - 1);
+        for (let i = startIdx; i <= endIdx; i++) {
+            if (arrayElements[i]) arrayElements[i].classList.add('low-ptr');
+        }
+
+        if (arrayElements[currentStepData.mainArrayIndex]) {
+            arrayElements[currentStepData.mainArrayIndex].classList.add('current-check');
+            if (currentStepData.foundInBlock) {
+                arrayElements[currentStepData.mainArrayIndex].classList.add('found');
+            }
+        }
+    } else if (currentStepData.stage === 'final') {
+        if (currentStepData.found && arrayElements[currentStepData.mainArrayIndex]) {
+            arrayElements[currentStepData.mainArrayIndex].classList.add('found');
+        }
+    }
+
+    document.getElementById('indexSeqPrevBtn').disabled = currentIndexSeqStep === 0;
+    document.getElementById('indexSeqNextBtn').disabled = currentIndexSeqStep === indexSeqSimulationSteps.length - 1;
+}
+
+function nextIndexSeqStep() {
+    if (currentIndexSeqStep < indexSeqSimulationSteps.length - 1) {
+        currentIndexSeqStep++;
+        renderIndexSeqStep(currentIndexSeqStep);
+    }
+}
+
+function prevIndexSeqStep() {
+    if (currentIndexSeqStep > 0) {
+        currentIndexSeqStep--;
+        renderIndexSeqStep(currentIndexSeqStep);
+    }
+}
+
+
+// ---------- 보간 탐색 시뮬레이션 ----------
+const interpolationData = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]; // 균등 분포 데이터
+let interpolationSimulationSteps = [];
+let currentInterpolationStep = 0;
+
+function initInterpolationSearchSimulation() {
+    const container = document.getElementById('interpolationArrayContainer');
+    container.innerHTML = '';
+    interpolationData.forEach((num, index) => {
+        const element = document.createElement('div');
+        element.className = 'array-element';
+        element.textContent = num;
+        element.dataset.index = index;
+        container.appendChild(element);
+    });
+    document.getElementById('interpolationSimulationMessage').textContent = '숫자를 입력하고 탐색을 시작하세요.';
+    document.getElementById('interpolationPrevBtn').disabled = true;
+    document.getElementById('interpolationNextBtn').disabled = true;
+    currentInterpolationStep = 0;
+    interpolationSimulationSteps = [];
+}
+
+function startInterpolationSearchSimulation() {
+    const targetInput = document.getElementById('interpolationSearchTargetInput');
+    const targetValue = parseInt(targetInput.value);
+
+    if (isNaN(targetValue)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    interpolationSimulationSteps = [];
+    currentInterpolationStep = 0;
+
+    let low = 0;
+    let high = interpolationData.length - 1;
+    let found = false;
+
+    while (low <= high && targetValue >= interpolationData[low] && targetValue <= interpolationData[high]) {
+        if (low === high) { // 배열에 요소가 하나만 남은 경우
+            if (interpolationData[low] === targetValue) {
+                interpolationSimulationSteps.push({
+                    low: low, high: high, pos: low,
+                    message: `값 ${targetValue}가 인덱스 ${low}에서 발견되었습니다!`,
+                    found: true, final: true
+                });
+                found = true;
+            } else {
+                interpolationSimulationSteps.push({
+                    low: low, high: high, pos: low,
+                    message: `값 ${targetValue}를 찾을 수 없습니다.`,
+                    found: false, final: true
+                });
+            }
+            break;
+        }
+
+        // 보간 공식으로 'pos' 계산
+        let pos = low + Math.floor(((targetValue - interpolationData[low]) * (high - low)) / (interpolationData[high] - interpolationData[low]));
+
+        // 범위 내에 있는지 확인
+        if (pos < low || pos > high) {
+             interpolationSimulationSteps.push({
+                low: low, high: high, pos: pos,
+                message: `계산된 위치 ${pos}가 유효 범위를 벗어납니다. 탐색 실패.`,
+                found: false, final: true
+            });
+            break;
+        }
+
+        interpolationSimulationSteps.push({
+            low: low,
+            high: high,
+            pos: pos,
+            message: `low: ${low}, high: ${high}. 예측된 위치(pos): ${pos}. ${interpolationData[pos]}와 ${targetValue} 비교.`,
+            found: interpolationData[pos] === targetValue
+        });
+
+        if (interpolationData[pos] === targetValue) {
+            interpolationSimulationSteps.push({
+                low: low, high: high, pos: pos,
+                message: `목표값 ${targetValue}를(을) 인덱스 ${pos}에서 발견! 탐색 성공.`,
+                found: true, final: true
+            });
+            found = true;
+            break;
+        } else if (interpolationData[pos] < targetValue) {
+            low = pos + 1;
+        } else {
+            high = pos - 1;
+        }
+    }
+
+    if (!found) {
+        interpolationSimulationSteps.push({
+            low: -1, high: -1, pos: -1,
+            message: `배열에 목표값 ${targetValue}를(을) 찾을 수 없습니다. 탐색 실패.`,
+            found: false, final: true
+        });
+    }
+
+    renderInterpolationStep(currentInterpolationStep);
+    document.getElementById('interpolationPrevBtn').disabled = true;
+    document.getElementById('interpolationNextBtn').disabled = interpolationSimulationSteps.length <= 1;
+}
+
+function renderInterpolationStep(step) {
+    const elements = document.querySelectorAll('#interpolationArrayContainer .array-element');
+    elements.forEach(el => {
+        el.classList.remove('low-ptr', 'high-ptr', 'mid-ptr', 'current-check', 'found');
+        el.querySelectorAll('.ptr-label').forEach(label => label.remove());
+    });
+
+    if (interpolationSimulationSteps.length === 0) return;
+
+    const currentStepData = interpolationSimulationSteps[step];
+    const messageDiv = document.getElementById('interpolationSimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    if (currentStepData.low !== -1) {
+        if (elements[currentStepData.low]) {
+            elements[currentStepData.low].classList.add('low-ptr');
+            const label = document.createElement('span');
+            label.className = 'ptr-label low-label';
+            label.textContent = 'Low';
+            elements[currentStepData.low].appendChild(label);
+        }
+        if (elements[currentStepData.high]) {
+            elements[currentStepData.high].classList.add('high-ptr');
+            const label = document.createElement('span');
+            label.className = 'ptr-label high-label';
+            label.textContent = 'High';
+            elements[currentStepData.high].appendChild(label);
+        }
+        if (elements[currentStepData.pos] && currentStepData.pos >= 0 && currentStepData.pos < elements.length) {
+            elements[currentStepData.pos].classList.add('mid-ptr'); // mid-ptr 클래스 재활용
+            const label = document.createElement('span');
+            label.className = 'ptr-label mid-label';
+            label.textContent = 'Pos';
+            elements[currentStepData.pos].appendChild(label);
+
+            if (currentStepData.found) {
+                elements[currentStepData.pos].classList.add('found');
+            } else {
+                elements[currentStepData.pos].classList.add('current-check');
+            }
+        }
+    }
+
+    document.getElementById('interpolationPrevBtn').disabled = currentInterpolationStep === 0;
+    document.getElementById('interpolationNextBtn').disabled = currentInterpolationStep === interpolationSimulationSteps.length - 1;
+}
+
+function nextInterpolationStep() {
+    if (currentInterpolationStep < interpolationSimulationSteps.length - 1) {
+        currentInterpolationStep++;
+        renderInterpolationStep(currentInterpolationStep);
+    }
+}
+
+function prevInterpolationStep() {
+    if (currentInterpolationStep > 0) {
+        currentInterpolationStep--;
+        renderInterpolationStep(currentInterpolationStep);
+    }
+}
+
+// ---------- 균형 이진 탐색 트리 (AVL 트리 예시) 시뮬레이션 ----------
+// 간단한 트리 구조 (노드와 연결 정보만)
+const avlTreeNodes = {
+    50: { left: 30, right: 70 },
+    30: { left: 20, right: 40 },
+    70: { left: 60, right: 80 },
+    20: { left: null, right: null },
+    40: { left: null, right: null },
+    60: { left: null, right: null },
+    80: { left: null, right: null }
+}; 
+
+let avlSimulationSteps = [];
+let currentAvlStep = 0;
+
+function initAvlSearchSimulation() {
+    const displayArea = document.getElementById('avlTreeDisplayArea');
+    displayArea.innerHTML = ''; // 기존 내용 초기화 (트리 노드만)
+    
+    // 이진 트리의 계층 구조를 나타내는 간단한 HTML
+    const treeDiv = document.createElement('div');
+    treeDiv.className = 'flex flex-col items-center w-full';
+
+    // Root
+    let rootWrapper = document.createElement('div');
+    rootWrapper.className = 'flex justify-center w-full';
+    let rootNode = createTreeNode(50);
+    rootWrapper.appendChild(rootNode);
+    treeDiv.appendChild(rootWrapper);
+
+    // Level 2 (Children of 50)
+    let level2Wrapper = document.createElement('div');
+    level2Wrapper.className = 'flex justify-center w-full mt-10';
+    let node30 = createTreeNode(30);
+    let node70 = createTreeNode(70);
+    level2Wrapper.appendChild(node30);
+    level2Wrapper.appendChild(node70);
+    treeDiv.appendChild(level2Wrapper);
+
+    // Level 3 (Children of 30, 70)
+    let level3Wrapper = document.createElement('div');
+    level3Wrapper.className = 'flex justify-center w-full mt-10';
+    level3Wrapper.appendChild(createTreeNode(20));
+    level3Wrapper.appendChild(createTreeNode(40));
+    level3Wrapper.appendChild(createTreeNode(60));
+    level3Wrapper.appendChild(createTreeNode(80));
+    treeDiv.appendChild(level3Wrapper);
+
+    displayArea.appendChild(treeDiv); // Add the tree structure to the display area
+
+
+    const messageDiv = document.getElementById('avlSimulationMessage'); // Now outside the cleared area
+    if (messageDiv) {
+        messageDiv.textContent = '숫자를 입력하고 탐색을 시작하세요.';
+    } else {
+        console.error("avlSimulationMessage element not found in initAvlSearchSimulation.");
+    }
+
+    // 버튼들도 이제 avlTreeDisplayArea 외부에 있으므로 document.getElementById로 직접 접근
+    const prevBtn = document.getElementById('avlPrevBtn');
+    const nextBtn = document.getElementById('avlNextBtn');
+
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+
+    currentAvlStep = 0;
+    avlSimulationSteps = [];
+}
+
+function createTreeNode(value) {
+    const node = document.createElement('div');
+    node.className = 'tree-node';
+    node.textContent = value;
+    node.dataset.value = value;
+    return node;
+}
+
+function startAvlSearchSimulation() {
+    const targetInput = document.getElementById('avlSearchTargetInput');
+    const targetValue = parseInt(targetInput.value);
+
+    if (isNaN(targetValue)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    avlSimulationSteps = [];
+    currentAvlStep = 0;
+
+    let currentNodeValue = 50; // AVL 트리의 루트 노드부터 시작 (예시)
+    let found = false;
+    let path = [];
+
+    // 탐색 시뮬레이션
+    while (currentNodeValue !== null && avlTreeNodes[currentNodeValue]) {
+        path.push(currentNodeValue);
+        avlSimulationSteps.push({
+            path: [...path],
+            message: `현재 노드 ${currentNodeValue}와 ${targetValue} 비교.`,
+            found: currentNodeValue === targetValue
+        });
+
+        if (currentNodeValue === targetValue) {
+            found = true;
+            break;
+        } else if (targetValue < currentNodeValue) {
+            currentNodeValue = avlTreeNodes[currentNodeValue].left;
+        } else {
+            currentNodeValue = avlTreeNodes[currentNodeValue].right;
+        }
+    }
+    
+    // 최종 상태 기록 (찾았거나 못 찾았거나)
+    avlSimulationSteps.push({
+        path: [...path],
+        message: found ? `목표값 ${targetValue}를(을) 발견했습니다!` : `목표값 ${targetValue}를(을) 찾을 수 없습니다.`,
+        found: found,
+        final: true
+    });
+
+    renderAvlStep(currentAvlStep);
+    document.getElementById('avlPrevBtn').disabled = true;
+    document.getElementById('avlNextBtn').disabled = avlSimulationSteps.length <= 1;
+}
+
+function renderAvlStep(step) {
+    const nodes = document.querySelectorAll('#avlTreeDisplayArea .tree-node'); // Changed selector
+    nodes.forEach(node => {
+        node.classList.remove('highlighted-path', 'found-node', 'current-check');
+    });
+
+    if (avlSimulationSteps.length === 0) return;
+
+    const currentStepData = avlSimulationSteps[step];
+    const messageDiv = document.getElementById('avlSimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    currentStepData.path.forEach(nodeValue => {
+        const nodeEl = Array.from(nodes).find(n => parseInt(n.dataset.value) === nodeValue);
+        if (nodeEl) {
+            nodeEl.classList.add('highlighted-path');
+        }
+    });
+
+    if (currentStepData.found) {
+        const foundNodeEl = Array.from(nodes).find(n => parseInt(n.dataset.value) === currentStepData.path[currentStepData.path.length - 1]);
+        if (foundNodeEl) {
+            foundNodeEl.classList.add('found-node');
+        }
+    } else if (currentStepData.path.length > 0 && !currentStepData.final) {
+         const lastNodeEl = Array.from(nodes).find(n => parseInt(n.dataset.value) === currentStepData.path[currentStepData.path.length - 1]);
+         if (lastNodeEl) {
+             lastNodeEl.classList.add('current-check'); // 현재 비교 중인 노드 표시
+         }
+    }
+
+
+    document.getElementById('avlPrevBtn').disabled = currentAvlStep === 0;
+    document.getElementById('avlNextBtn').disabled = currentAvlStep === avlSimulationSteps.length - 1;
+}
+
+function nextAvlStep() {
+    if (currentAvlStep < avlSimulationSteps.length - 1) {
+        currentAvlStep++;
+        renderAvlStep(currentAvlStep);
+    }
+}
+
+function prevAvlStep() {
+    if (currentAvlStep > 0) {
+        currentAvlStep--;
+        renderAvlStep(currentAvlStep);
+    }
+}
+
+
+// ---------- 해싱 - 선형 조사법 시뮬레이션 ----------
+const LINEAR_PROBING_TABLE_SIZE = 7;
+let linearProbingTable = Array(LINEAR_PROBING_TABLE_SIZE).fill(null);
+let linearProbingSimulationSteps = [];
+let currentLinearProbingStep = 0;
+
+function linearProbingHashFunction(key) {
+    return key % LINEAR_PROBING_TABLE_SIZE;
+}
+
+function initLinearProbingSimulation() {
+    const container = document.getElementById('linearProbingTableContainer');
+    container.innerHTML = '';
+    linearProbingTable = Array(LINEAR_PROBING_TABLE_SIZE).fill(null); // 테이블 초기화
+
+    for (let i = 0; i < LINEAR_PROBING_TABLE_SIZE; i++) {
+        const bucket = document.createElement('div');
+        bucket.className = 'hash-bucket';
+        bucket.dataset.index = i;
+        const indexLabel = document.createElement('span');
+        indexLabel.className = 'hash-bucket-index';
+        indexLabel.textContent = `[${i}]`;
+        bucket.appendChild(indexLabel);
+        container.appendChild(bucket);
+    }
+    document.getElementById('linearProbingSimulationMessage').textContent = '키를 입력하고 삽입을 시작하세요.';
+    document.getElementById('linearProbingPrevBtn').disabled = true;
+    document.getElementById('linearProbingNextBtn').disabled = true;
+    currentLinearProbingStep = 0;
+    linearProbingSimulationSteps = [];
+}
+
+function startLinearProbingSimulation() {
+    const keyInput = document.getElementById('linearProbingKeyInput');
+    const key = parseInt(keyInput.value);
+
+    if (isNaN(key)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    linearProbingSimulationSteps = [];
+    currentLinearProbingStep = 0;
+
+    let tempTable = [...linearProbingTable]; // 시뮬레이션을 위한 임시 테이블
+
+    let hashIndex = linearProbingHashFunction(key);
+    let probeIndex = hashIndex;
+    let inserted = false;
+
+    // 초기 해시 위치 확인
+    linearProbingSimulationSteps.push({
+        table: [...tempTable],
+        originalHash: hashIndex,
+        currentProbe: hashIndex,
+        key: key,
+        message: `키 ${key}의 해시 주소는 ${hashIndex}입니다. 인덱스 ${hashIndex} 확인 중.`,
+        collision: tempTable[hashIndex] !== null,
+        inserted: false,
+        final: false
+    });
+
+    for (let i = 0; i < LINEAR_PROBING_TABLE_SIZE; i++) {
+        probeIndex = (hashIndex + i) % LINEAR_PROBING_TABLE_SIZE;
+        
+        if (i > 0) { // 첫 프로브 이후 단계는 이전 상태를 유지하며 메시지 업데이트
+             linearProbingSimulationSteps.push({
+                table: [...tempTable], // 이전 단계의 테이블 상태 그대로 사용
+                originalHash: hashIndex,
+                currentProbe: probeIndex,
+                key: key,
+                message: `충돌 발생. 다음 인덱스 ${probeIndex} 확인 중 (선형 조사).`,
+                collision: tempTable[probeIndex] !== null,
+                inserted: false,
+                final: false
+            });
+        }
+        
+        if (tempTable[probeIndex] === null) {
+            tempTable[probeIndex] = key;
+            linearProbingSimulationSteps.push({
+                table: [...tempTable],
+                originalHash: hashIndex,
+                currentProbe: probeIndex,
+                key: key,
+                message: `인덱스 ${probeIndex}에 키 ${key} 삽입 완료.`,
+                collision: false,
+                inserted: true,
+                final: true
+            });
+            inserted = true;
+            break;
+        }
+    }
+
+    if (!inserted) {
+        linearProbingSimulationSteps.push({
+            table: [...tempTable],
+            originalHash: hashIndex,
+            currentProbe: -1,
+            key: key,
+            message: `테이블이 가득 찼거나 키 ${key}를 삽입할 공간을 찾지 못했습니다.`,
+            collision: false,
+            inserted: false,
+            final: true
+        });
+    }
+    
+    // 실제 테이블에 반영
+    linearProbingTable = linearProbingSimulationSteps[linearProbingSimulationSteps.length - 1].table;
+
+    renderLinearProbingStep(currentLinearProbingStep);
+    document.getElementById('linearProbingPrevBtn').disabled = true;
+    document.getElementById('linearProbingNextBtn').disabled = linearProbingSimulationSteps.length <= 1;
+}
+
+function renderLinearProbingStep(step) {
+    const buckets = document.querySelectorAll('#linearProbingTableContainer .hash-bucket');
+    buckets.forEach(bucket => {
+        bucket.innerHTML = `<span class="hash-bucket-index">[${bucket.dataset.index}]</span>`; // 내용 초기화
+        bucket.classList.remove('highlighted');
+    });
+
+    if (linearProbingSimulationSteps.length === 0) return;
+
+    const currentStepData = linearProbingSimulationSteps[step];
+    const messageDiv = document.getElementById('linearProbingSimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    // 테이블 상태 렌더링
+    currentStepData.table.forEach((value, index) => {
+        const bucketEl = buckets[index];
+        if (value !== null) {
+            const entry = document.createElement('div');
+            entry.className = 'hash-entry';
+            entry.textContent = value;
+            if (currentStepData.currentProbe === index && currentStepData.inserted) {
+                 entry.classList.add('inserted');
+            } else if (currentStepData.currentProbe === index && currentStepData.collision && !currentStepData.inserted) {
+                entry.classList.add('probing');
+            }
+             bucketEl.appendChild(entry);
+        }
+    });
+
+    // 현재 프로브 인덱스 하이라이트
+    if (currentStepData.currentProbe !== -1 && buckets[currentStepData.currentProbe]) {
+        buckets[currentStepData.currentProbe].classList.add('highlighted');
+    }
+
+    document.getElementById('linearProbingPrevBtn').disabled = currentLinearProbingStep === 0;
+    document.getElementById('linearProbingNextBtn').disabled = currentLinearProbingStep === linearProbingSimulationSteps.length - 1;
+}
+
+function nextLinearProbingStep() {
+    if (currentLinearProbingStep < linearProbingSimulationSteps.length - 1) {
+        currentLinearProbingStep++;
+        renderLinearProbingStep(currentLinearProbingStep);
+    }
+}
+
+function prevLinearProbingStep() {
+    if (currentLinearProbingStep > 0) {
+        currentLinearProbingStep--;
+        renderLinearProbingStep(currentLinearProbingStep);
+    }
+}
+
+// ---------- 해싱 - 이차 조사법 시뮬레이션 ----------
+const QUADRATIC_PROBING_TABLE_SIZE = 7;
+let quadraticProbingTable = Array(QUADRATIC_PROBING_TABLE_SIZE).fill(null);
+let quadraticProbingSimulationSteps = [];
+let currentQuadraticProbingStep = 0;
+
+function quadraticProbingHashFunction(key) {
+    return key % QUADRATIC_PROBING_TABLE_SIZE;
+}
+
+function initQuadraticProbingSimulation() {
+    const container = document.getElementById('quadraticProbingTableContainer');
+    container.innerHTML = '';
+    quadraticProbingTable = Array(QUADRATIC_PROBING_TABLE_SIZE).fill(null); // 테이블 초기화
+
+    for (let i = 0; i < QUADRATIC_PROBING_TABLE_SIZE; i++) {
+        const bucket = document.createElement('div');
+        bucket.className = 'hash-bucket';
+        bucket.dataset.index = i;
+        const indexLabel = document.createElement('span');
+        indexLabel.className = 'hash-bucket-index';
+        indexLabel.textContent = `[${i}]`;
+        bucket.appendChild(indexLabel);
+        container.appendChild(bucket);
+    }
+    document.getElementById('quadraticProbingSimulationMessage').textContent = '키를 입력하고 삽입을 시작하세요.';
+    document.getElementById('quadraticProbingPrevBtn').disabled = true;
+    document.getElementById('quadraticProbingNextBtn').disabled = true;
+    currentQuadraticProbingStep = 0;
+    quadraticProbingSimulationSteps = [];
+}
+
+function startQuadraticProbingSimulation() {
+    const keyInput = document.getElementById('quadraticProbingKeyInput');
+    const key = parseInt(keyInput.value);
+
+    if (isNaN(key)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    quadraticProbingSimulationSteps = [];
+    currentQuadraticProbingStep = 0;
+
+    let tempTable = [...quadraticProbingTable]; // 시뮬레이션을 위한 임시 테이블
+
+    let hashIndex = quadraticProbingHashFunction(key);
+    let inserted = false;
+
+    // 초기 해시 위치 확인
+    quadraticProbingSimulationSteps.push({
+        table: [...tempTable],
+        originalHash: hashIndex,
+        currentProbe: hashIndex,
+        key: key,
+        message: `키 ${key}의 해시 주소는 ${hashIndex}입니다. 인덱스 ${hashIndex} 확인 중.`,
+        collision: tempTable[hashIndex] !== null,
+        inserted: false,
+        final: false
+    });
+
+    for (let i = 0; i < QUADRATIC_PROBING_TABLE_SIZE; i++) {
+        let probeOffset = i * i;
+        let probeIndex = (hashIndex + probeOffset) % QUADRATIC_PROBING_TABLE_SIZE;
+        
+        if (i > 0) {
+            quadraticProbingSimulationSteps.push({
+                table: [...tempTable],
+                originalHash: hashIndex,
+                currentProbe: probeIndex,
+                key: key,
+                message: `충돌 발생. 다음 인덱스 ${probeIndex} 확인 중 (이차 조사: +${i}^2).`,
+                collision: tempTable[probeIndex] !== null,
+                inserted: false,
+                final: false
+            });
+        }
+
+        if (tempTable[probeIndex] === null) {
+            tempTable[probeIndex] = key;
+            quadraticProbingSimulationSteps.push({
+                table: [...tempTable],
+                originalHash: hashIndex,
+                currentProbe: probeIndex,
+                key: key,
+                message: `인덱스 ${probeIndex}에 키 ${key} 삽입 완료.`,
+                collision: false,
+                inserted: true,
+                final: true
+            });
+            inserted = true;
+            break;
+        }
+    }
+
+    if (!inserted) {
+        quadraticProbingSimulationSteps.push({
+            table: [...tempTable],
+            originalHash: hashIndex,
+            currentProbe: -1,
+            key: key,
+            message: `테이블이 가득 찼거나 키 ${key}를 삽입할 공간을 찾지 못했습니다.`,
+            collision: false,
+            inserted: false,
+            final: true
+        });
+    }
+    quadraticProbingTable = quadraticProbingSimulationSteps[quadraticProbingSimulationSteps.length - 1].table;
+
+    renderQuadraticProbingStep(currentQuadraticProbingStep);
+    document.getElementById('quadraticProbingPrevBtn').disabled = true;
+    document.getElementById('quadraticProbingNextBtn').disabled = quadraticProbingSimulationSteps.length <= 1;
+}
+
+function renderQuadraticProbingStep(step) {
+    const buckets = document.querySelectorAll('#quadraticProbingTableContainer .hash-bucket');
+    buckets.forEach(bucket => {
+        bucket.innerHTML = `<span class="hash-bucket-index">[${bucket.dataset.index}]</span>`;
+        bucket.classList.remove('highlighted');
+    });
+
+    if (quadraticProbingSimulationSteps.length === 0) return;
+
+    const currentStepData = quadraticProbingSimulationSteps[step];
+    const messageDiv = document.getElementById('quadraticProbingSimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    currentStepData.table.forEach((value, index) => {
+        const bucketEl = buckets[index];
+        if (value !== null) {
+            const entry = document.createElement('div');
+            entry.className = 'hash-entry';
+            entry.textContent = value;
+            if (currentStepData.currentProbe === index && currentStepData.inserted) {
+                 entry.classList.add('inserted');
+            } else if (currentStepData.currentProbe === index && currentStepData.collision && !currentStepData.inserted) {
+                entry.classList.add('probing');
+            }
+             bucketEl.appendChild(entry);
+        }
+    });
+
+    if (currentStepData.currentProbe !== -1 && buckets[currentStepData.currentProbe]) {
+        buckets[currentStepData.currentProbe].classList.add('highlighted');
+    }
+
+    document.getElementById('quadraticProbingPrevBtn').disabled = currentQuadraticProbingStep === 0;
+    document.getElementById('quadraticProbingNextBtn').disabled = currentQuadraticProbingStep === quadraticProbingSimulationSteps.length - 1;
+}
+
+function nextQuadraticProbingStep() {
+    if (currentQuadraticProbingStep < quadraticProbingSimulationSteps.length - 1) {
+        currentQuadraticProbingStep++;
+        renderQuadraticProbingStep(currentQuadraticProbingStep);
+    }
+}
+
+function prevQuadraticProbingStep() {
+    if (currentQuadraticProbingStep > 0) {
+        currentQuadraticProbingStep--;
+        renderQuadraticProbingStep(currentQuadraticProbingStep);
+    }
+}
+
+// ---------- 해싱 - 이중 해싱법 시뮬레이션 ----------
+const DOUBLE_HASHING_TABLE_SIZE = 7;
+let doubleHashingTable = Array(DOUBLE_HASHING_TABLE_SIZE).fill(null);
+let doubleHashingSimulationSteps = [];
+let currentDoubleHashingStep = 0;
+
+function doubleHashingHashFunction1(key) {
+    return key % DOUBLE_HASHING_TABLE_SIZE;
+}
+
+function doubleHashingHashFunction2(key) {
+    return 1 + (key % (DOUBLE_HASHING_TABLE_SIZE - 1)); // Second hash function (must return non-zero)
+}
+
+function initDoubleHashingSimulation() {
+    const container = document.getElementById('doubleHashingTableContainer');
+    container.innerHTML = '';
+    doubleHashingTable = Array(DOUBLE_HASHING_TABLE_SIZE).fill(null); // 테이블 초기화
+
+    for (let i = 0; i < DOUBLE_HASHING_TABLE_SIZE; i++) {
+        const bucket = document.createElement('div');
+        bucket.className = 'hash-bucket';
+        bucket.dataset.index = i;
+        const indexLabel = document.createElement('span');
+        indexLabel.className = 'hash-bucket-index';
+        indexLabel.textContent = `[${i}]`;
+        bucket.appendChild(indexLabel);
+        container.appendChild(bucket);
+    }
+    document.getElementById('doubleHashingSimulationMessage').textContent = '키를 입력하고 삽입을 시작하세요.';
+    document.getElementById('doubleHashingPrevBtn').disabled = true;
+    document.getElementById('doubleHashingNextBtn').disabled = true;
+    currentDoubleHashingStep = 0;
+    doubleHashingSimulationSteps = [];
+}
+
+function startDoubleHashingSimulation() {
+    const keyInput = document.getElementById('doubleHashingKeyInput');
+    const key = parseInt(keyInput.value);
+
+    if (isNaN(key)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    doubleHashingSimulationSteps = [];
+    currentDoubleHashingStep = 0;
+
+    let tempTable = [...doubleHashingTable]; // 시뮬레이션을 위한 임시 테이블
+
+    let hash1 = doubleHashingHashFunction1(key);
+    let hash2 = doubleHashingHashFunction2(key);
+    let inserted = false;
+
+    // 초기 해시 위치 확인
+    doubleHashingSimulationSteps.push({
+        table: [...tempTable],
+        originalHash1: hash1,
+        hash2: hash2,
+        currentProbe: hash1,
+        key: key,
+        message: `키 ${key}의 첫 해시 주소는 ${hash1}, 두 번째 해시는 ${hash2}입니다. 인덱스 ${hash1} 확인 중.`,
+        collision: tempTable[hash1] !== null,
+        inserted: false,
+        final: false
+    });
+
+    for (let i = 0; i < DOUBLE_HASHING_TABLE_SIZE; i++) {
+        let probeIndex = (hash1 + i * hash2) % DOUBLE_HASHING_TABLE_SIZE;
+        
+        if (i > 0) {
+            doubleHashingSimulationSteps.push({
+                table: [...tempTable],
+                originalHash1: hash1,
+                hash2: hash2,
+                currentProbe: probeIndex,
+                key: key,
+                message: `충돌 발생. 다음 인덱스 ${probeIndex} 확인 중 (이중 해싱: +${i}*${hash2}).`,
+                collision: tempTable[probeIndex] !== null,
+                inserted: false,
+                final: false
+            });
+        }
+
+        if (tempTable[probeIndex] === null) {
+            tempTable[probeIndex] = key;
+            doubleHashingSimulationSteps.push({
+                table: [...tempTable],
+                originalHash1: hash1,
+                hash2: hash2,
+                currentProbe: probeIndex,
+                key: key,
+                message: `인덱스 ${probeIndex}에 키 ${key} 삽입 완료.`,
+                collision: false,
+                inserted: true,
+                final: true
+            });
+            inserted = true;
+            break;
+        }
+    }
+
+    if (!inserted) {
+        doubleHashingSimulationSteps.push({
+            table: [...tempTable],
+            originalHash1: hash1,
+            hash2: hash2,
+            currentProbe: -1,
+            key: key,
+            message: `테이블이 가득 찼거나 키 ${key}를 삽입할 공간을 찾지 못했습니다.`,
+            collision: false,
+            inserted: false,
+            final: true
+        });
+    }
+    doubleHashingTable = doubleHashingSimulationSteps[doubleHashingSimulationSteps.length - 1].table;
+
+    renderDoubleHashingStep(currentDoubleHashingStep);
+    document.getElementById('doubleHashingPrevBtn').disabled = true;
+    document.getElementById('doubleHashingNextBtn').disabled = doubleHashingSimulationSteps.length <= 1;
+}
+
+function renderDoubleHashingStep(step) {
+    const buckets = document.querySelectorAll('#doubleHashingTableContainer .hash-bucket');
+    buckets.forEach(bucket => {
+        bucket.innerHTML = `<span class="hash-bucket-index">[${bucket.dataset.index}]</span>`;
+        bucket.classList.remove('highlighted');
+    });
+
+    if (doubleHashingSimulationSteps.length === 0) return;
+
+    const currentStepData = doubleHashingSimulationSteps[step];
+    const messageDiv = document.getElementById('doubleHashingSimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    currentStepData.table.forEach((value, index) => {
+        const bucketEl = buckets[index];
+        if (value !== null) {
+            const entry = document.createElement('div');
+            entry.className = 'hash-entry';
+            entry.textContent = value;
+            if (currentStepData.currentProbe === index && currentStepData.inserted) {
+                 entry.classList.add('inserted');
+            } else if (currentStepData.currentProbe === index && currentStepData.collision && !currentStepData.inserted) {
+                entry.classList.add('probing');
+            }
+             bucketEl.appendChild(entry);
+        }
+    });
+
+    if (currentStepData.currentProbe !== -1 && buckets[currentStepData.currentProbe]) {
+        buckets[currentStepData.currentProbe].classList.add('highlighted');
+    }
+
+    document.getElementById('doubleHashingPrevBtn').disabled = currentDoubleHashingStep === 0;
+    document.getElementById('doubleHashingNextBtn').disabled = currentDoubleHashingStep === doubleHashingSimulationSteps.length - 1;
+}
+
+function nextDoubleHashingStep() {
+    if (currentDoubleHashingStep < doubleHashingSimulationSteps.length - 1) {
+        currentDoubleHashingStep++;
+        renderDoubleHashingStep(currentDoubleHashingStep);
+    }
+}
+
+function prevDoubleHashingStep() {
+    if (currentDoubleHashingStep > 0) {
+        currentDoubleHashingStep--;
+        renderDoubleHashingStep(currentDoubleHashingStep);
+    }
+}
+
+
+// ---------- 해싱 - 체이닝 시뮬레이션 ----------
+const CHAINING_TABLE_SIZE = 7;
+let chainingTable = Array(CHAINING_TABLE_SIZE).fill(null).map(() => []); // 각 버킷은 배열(연결 리스트)
+let chainingSimulationSteps = [];
+let currentChainingStep = 0;
+
+function chainingHashFunction(key) {
+    return key % CHAINING_TABLE_SIZE;
+}
+
+function initChainingSimulation() {
+    const container = document.getElementById('chainingTableContainer');
+    container.innerHTML = '';
+    chainingTable = Array(CHAINING_TABLE_SIZE).fill(null).map(() => []); // 테이블 초기화
+
+    for (let i = 0; i < CHAINING_TABLE_SIZE; i++) {
+        const bucket = document.createElement('div');
+        bucket.className = 'hash-bucket';
+        bucket.dataset.index = i;
+        const indexLabel = document.createElement('span');
+        indexLabel.className = 'hash-bucket-index';
+        indexLabel.textContent = `[${i}]`;
+        bucket.appendChild(indexLabel);
+        container.appendChild(bucket);
+    }
+    document.getElementById('chainingSimulationMessage').textContent = '키를 입력하고 삽입을 시작하세요.';
+    document.getElementById('chainingPrevBtn').disabled = true;
+    document.getElementById('chainingNextBtn').disabled = true;
+    currentChainingStep = 0;
+    chainingSimulationSteps = [];
+}
+
+function startChainingSimulation() {
+    const keyInput = document.getElementById('chainingKeyInput');
+    const key = parseInt(keyInput.value);
+
+    if (isNaN(key)) {
+        showModal('입력 오류', '올바른 숫자를 입력하세요.');
+        return;
+    }
+
+    chainingSimulationSteps = [];
+    currentChainingStep = 0;
+
+    const hashIndex = chainingHashFunction(key);
+    let tempTable = chainingTable.map(bucket => [...bucket]); // 시뮬레이션을 위한 임시 테이블
+
+    // 1단계: 해시 주소 계산 및 버킷 하이라이트
+    chainingSimulationSteps.push({
+        table: tempTable.map(bucket => [...bucket]), // 현재 테이블 상태 복사
+        originalHash: hashIndex,
+        key: key,
+        message: `키 ${key}의 해시 주소는 ${hashIndex}입니다. 해당 버킷을 확인합니다.`,
+        currentBucketHighlight: hashIndex,
+        insertedKey: null,
+        insertPhase: 'hash_calc'
+    });
+
+    // 2단계: 버킷에 삽입 시도
+    tempTable[hashIndex].push(key);
+    chainingSimulationSteps.push({
+        table: tempTable.map(bucket => [...bucket]),
+        originalHash: hashIndex,
+        key: key,
+        message: `해시 주소 ${hashIndex}의 버킷에 키 ${key} 삽입 완료. (충돌 시 연결 리스트에 추가)`,
+        currentBucketHighlight: hashIndex,
+        insertedKey: key,
+        insertPhase: 'insert_complete'
+    });
+    chainingTable = tempTable.map(bucket => [...bucket]); // 최종 상태 업데이트
+
+    renderChainingStep(currentChainingStep);
+    document.getElementById('chainingPrevBtn').disabled = true;
+    document.getElementById('chainingNextBtn').disabled = chainingSimulationSteps.length <= 1;
+}
+
+function renderChainingStep(step) {
+    const buckets = document.querySelectorAll('#chainingTableContainer .hash-bucket');
+    buckets.forEach(bucket => {
+        bucket.innerHTML = `<span class="hash-bucket-index">[${bucket.dataset.index}]</span>`; // 내용 초기화
+        bucket.classList.remove('highlighted');
+    });
+
+    if (chainingSimulationSteps.length === 0) return;
+
+    const currentStepData = chainingSimulationSteps[step];
+    const messageDiv = document.getElementById('chainingSimulationMessage');
+    messageDiv.textContent = currentStepData.message;
+
+    // 테이블 상태 렌더링
+    currentStepData.table.forEach((bucketContent, index) => {
+        const bucketEl = buckets[index];
+        if (bucketContent.length > 0) {
+            bucketContent.forEach(item => {
+                const entry = document.createElement('div');
+                entry.className = 'chain-node';
+                entry.textContent = item;
+                if (currentStepData.insertPhase === 'insert_complete' && item === currentStepData.insertedKey && index === currentStepData.originalHash) {
+                    entry.classList.add('current-insert');
+                }
+                bucketEl.appendChild(entry);
+            });
+        }
+    });
+
+    // 현재 버킷 하이라이트
+    if (currentStepData.currentBucketHighlight !== null && buckets[currentStepData.currentBucketHighlight]) {
+        buckets[currentStepData.currentBucketHighlight].classList.add('highlighted');
+    }
+
+    document.getElementById('chainingPrevBtn').disabled = currentChainingStep === 0;
+    document.getElementById('chainingNextBtn').disabled = currentChainingStep === chainingSimulationSteps.length - 1;
+}
+
+function nextChainingStep() {
+    if (currentChainingStep < chainingSimulationSteps.length - 1) {
+        currentChainingStep++;
+        renderChainingStep(currentChainingStep);
+    }
+}
+
+function prevChainingStep() {
+    if (currentChainingStep > 0) {
+        currentChainingStep--;
+        renderChainingStep(currentChainingStep);
+    }
+}
+
+
+// ---------- 페이지 로드 시 초기화 ----------
+document.addEventListener('DOMContentLoaded', () => {
+    initLinearSearchSimulation();
+    initBinarySearchSimulation();
+    initIndexSeqSimulation();
+    initInterpolationSearchSimulation();
+    initAvlSearchSimulation();
+    initLinearProbingSimulation();
+    initQuadraticProbingSimulation();
+    initDoubleHashingSimulation();
+    initChainingSimulation();
+});
+</script>
+
+</body>
+</html>
