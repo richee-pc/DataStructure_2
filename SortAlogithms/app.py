@@ -60,5 +60,3 @@ elif page_selection == "탐색 알고리즘":
 
 st.markdown("---")
 st.write("질문이 있으시면 언제든지 문의해주세요!")
-
-�
