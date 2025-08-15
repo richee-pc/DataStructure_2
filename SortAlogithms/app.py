@@ -8,9 +8,9 @@ st.set_page_config(layout="wide", page_title="자료구조 교육 시뮬레이�
 # HTML 파일의 경로를 지정합니다.
 # 이 파일들을 Streamlit 앱과 같은 디렉토리에 두는 것이 가장 간단합니다.
 # 첫 번째 HTML 파일 (정렬 알고리즘)
-SORTING_HTML_FILE_PATH = "index2.html" 
+SORTING_HTML_FILE_PATH = "sorting_algorithms.html" 
 # 두 번째 HTML 파일 (탐색 알고리즘)
-SEARCHING_HTML_FILE_PATH = "index1.html"
+SEARCHING_HTML_FILE_PATH = "search_algorithms.html"
 
 # HTML 파일을 읽어오는 함수
 def load_html_file(file_path):
